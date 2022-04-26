@@ -1,2 +1,2 @@
 # BetterBuilding
-A Minecraft mod that add better building tools to the game
+A Minecraft mod that adds better building tools to the game
