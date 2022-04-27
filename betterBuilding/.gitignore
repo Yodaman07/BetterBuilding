@@ -5,8 +5,8 @@
 *.ipr
 *.iws
 
-.gradle
 .idea
+.gradle
 
 # IntelliJ
 out/
