@@ -17,7 +17,9 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,6 +38,8 @@ public class WoodWand extends Item {
     public int woodNum = 0;
     boolean status = false;
 
+    public static HashMap <UUID, Boolean> lockedState = new HashMap<> ();
+    
     @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
 
@@ -75,13 +79,16 @@ public class WoodWand extends Item {
 
                     if (matcher.find()) {
                         String result = matcher.group();
-                        String sel = "Currently Selected: " + result + "    Locked: " + status; // Selected block
+                        String sel = "Currently Selected: " + result + "    Locked: " + lockedState.get(playerEntity.getUuid()); // Selected block
                         playerEntity.sendMessage(Text.of(sel), true);
                     }
 
                     world.setBlockState(blockPos, plankList.get(woodNum).getDefaultState()); // Sets block
 
-                    woodNum++;
+
+                    if (lockedState.get(playerEntity.getUuid()) == false){
+                        woodNum++;
+                    }
                 }
 
                 break;
@@ -90,8 +97,6 @@ public class WoodWand extends Item {
         /* Wrong place for this. Try BetterBuilding.onInitialize? This will run every time the player uses the item,
            and will create extra handlers. Also, the player won't be able to lock the item before the player uses it.
         */
-
-
 
         return TypedActionResult.success(playerEntity.getStackInHand(hand));
     }

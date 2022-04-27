@@ -38,8 +38,6 @@ public class BetterBuildingClient implements ClientModInitializer {
                 buf.writeBoolean(locked);
                 ClientPlayNetworking.send(BetterBuilding.LOCK_WAND_ID, buf);
 
-
-                client.player.sendMessage(new LiteralText("Packet sent"), false);
                 locked = !locked;
             }
         });

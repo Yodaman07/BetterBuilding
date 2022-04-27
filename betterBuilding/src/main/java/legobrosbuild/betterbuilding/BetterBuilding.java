@@ -4,6 +4,7 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.item.ItemGroup;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
@@ -21,11 +22,13 @@ public class BetterBuilding implements ModInitializer {
             // PenguinEncounter says: store LOCK_WAND_ID in BetterBuilding.java, not BetterBuildingClient.java
 
             boolean lockedState = buf.readBoolean();
-            server.execute(() -> {
-                player.sendMessage(new LiteralText("Packet received"), false);
+            if (WoodWand.lockedState.containsKey(player.getUuid())){
+                WoodWand.lockedState.replace(player.getUuid(),lockedState); //Updates HashMap
+            }
+            else {
+                WoodWand.lockedState.put(player.getUuid(), lockedState); //Only used first time the button is pressed
+            }
 
-                System.out.println(lockedState);
-           });
         });
 
     }
