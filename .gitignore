@@ -5,6 +5,9 @@
 *.ipr
 *.iws
 
+.idea
+.gradle
+
 # IntelliJ
 out/
 # mpeltonen/sbt-idea plugin
