@@ -35,10 +35,10 @@ public class WoodWand extends Item {
         super(settings);
     }
 
-    public int woodNum = 0;
     boolean status = false;
 
-    public static HashMap <UUID, Boolean> lockedState = new HashMap<> ();
+    public static HashMap <UUID, Boolean> lockedState = new HashMap<>();
+    public static HashMap <UUID, Integer> nextPlank = new HashMap<>();  // Per-player.
     
     @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
@@ -46,12 +46,8 @@ public class WoodWand extends Item {
         if (world.isClient())
             return super.use(world, playerEntity, hand);
 
-        woodNum %= 8;
-
-
         HitResult hit = playerEntity.raycast(5, 0, false);
 
-        // plankList made obsolete by tag system + registry
         List<Block> logList = List.of(Blocks.CRIMSON_STEM, Blocks.WARPED_STEM, Blocks.DARK_OAK_LOG, Blocks.ACACIA_LOG,
                 Blocks.JUNGLE_LOG, Blocks.OAK_LOG, Blocks.BIRCH_LOG, Blocks.SPRUCE_LOG);
 
@@ -71,20 +67,25 @@ public class WoodWand extends Item {
 
                 // Update: use block tags instead of list. Helps with mod compatibility
                 if (blockState.isIn(BlockTags.PLANKS)) { // Makes sure the block is a plank: new, modernized version
-
+                    if (!lockedState.containsKey(playerEntity.getUuid())) {
+                        // default off
+                        lockedState.put(playerEntity.getUuid(), false);
+                    }
+                    if (!nextPlank.containsKey(playerEntity.getUuid())) {
+                        // default off
+                        nextPlank.put(playerEntity.getUuid(), 0);
+                    }
+                    int woodNum = nextPlank.get(playerEntity.getUuid());
                     String selectedBlock = Registry.BLOCK.getId(plankList.get(woodNum)).getPath(); // Registry id of the block (without namespace, e.g. "oak_planks")
 
                     Pattern pattern = Pattern.compile("(\\w)+_(\\w)+"); // REGEX
                     Matcher matcher = pattern.matcher(selectedBlock); // REGEX match
 
-                    if (!lockedState.containsKey(playerEntity.getUuid())) {
-                        // default off
-                        lockedState.put(playerEntity.getUuid(), false);
-                    }
+
 
                     if (matcher.find()) {
                         String result = matcher.group();
-                        String sel = "Currently Selected: " + result + "    Locked: " + lockedState.get(playerEntity.getUuid()); // Selected block
+                        String sel = "Selected: " + result + " Locked: " + lockedState.get(playerEntity.getUuid()); // Selected block
                         playerEntity.sendMessage(Text.of(sel), true);
                     }
 
@@ -92,10 +93,9 @@ public class WoodWand extends Item {
 
 
                     if (!lockedState.get(playerEntity.getUuid())){
-                        woodNum++;
+                        nextPlank.replace(playerEntity.getUuid(), (woodNum + 1) % 8); // Increments the next block
                     }
                 }
-
                 break;
         }
 
