@@ -19,7 +19,6 @@ public class BetterBuilding implements ModInitializer {
         Registry.register(Registry.ITEM, new Identifier("betterbuilding", "wood_wand"), WOOD_WAND);
 
         ServerPlayNetworking.registerGlobalReceiver(LOCK_WAND_ID, (server, player, handler, buf, responseSender) -> {
-            // PenguinEncounter says: store LOCK_WAND_ID in BetterBuilding.java, not BetterBuildingClient.java
 
             boolean lockedState = buf.readBoolean();
             if (WoodWand.lockedState.containsKey(player.getUuid())){
@@ -28,7 +27,6 @@ public class BetterBuilding implements ModInitializer {
             else {
                 WoodWand.lockedState.put(player.getUuid(), lockedState); //Only used first time the button is pressed
             }
-
         });
 
     }

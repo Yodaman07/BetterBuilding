@@ -14,6 +14,7 @@ import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.option.StickyKeyBinding;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
 
@@ -33,12 +34,14 @@ public class BetterBuildingClient implements ClientModInitializer {
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (keyBinding.wasPressed()) {
-
+                locked = !locked;  // Flip *before* sending??
                 PacketByteBuf buf = PacketByteBufs.create();
                 buf.writeBoolean(locked);
                 ClientPlayNetworking.send(BetterBuilding.LOCK_WAND_ID, buf);
-
-                locked = !locked;
+                assert client.player != null;
+                // condition ? (result if true) : (result if false)
+                // Look up "ternary operator"
+                client.player.sendMessage(new LiteralText(locked ? "Locked" : "Unlocked").formatted(locked ? Formatting.GREEN : Formatting.RED), true);
             }
         });
 

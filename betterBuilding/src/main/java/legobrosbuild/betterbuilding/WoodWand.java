@@ -77,6 +77,11 @@ public class WoodWand extends Item {
                     Pattern pattern = Pattern.compile("(\\w)+_(\\w)+"); // REGEX
                     Matcher matcher = pattern.matcher(selectedBlock); // REGEX match
 
+                    if (!lockedState.containsKey(playerEntity.getUuid())) {
+                        // default off
+                        lockedState.put(playerEntity.getUuid(), false);
+                    }
+
                     if (matcher.find()) {
                         String result = matcher.group();
                         String sel = "Currently Selected: " + result + "    Locked: " + lockedState.get(playerEntity.getUuid()); // Selected block
@@ -86,17 +91,13 @@ public class WoodWand extends Item {
                     world.setBlockState(blockPos, plankList.get(woodNum).getDefaultState()); // Sets block
 
 
-                    if (lockedState.get(playerEntity.getUuid()) == false){
+                    if (!lockedState.get(playerEntity.getUuid())){
                         woodNum++;
                     }
                 }
 
                 break;
         }
-
-        /* Wrong place for this. Try BetterBuilding.onInitialize? This will run every time the player uses the item,
-           and will create extra handlers. Also, the player won't be able to lock the item before the player uses it.
-        */
 
         return TypedActionResult.success(playerEntity.getStackInHand(hand));
     }
