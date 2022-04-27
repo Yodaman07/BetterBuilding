@@ -14,6 +14,8 @@ public class BetterBuilding implements ModInitializer {
     public static final WoodWand WOOD_WAND = new WoodWand(new FabricItemSettings().group(ItemGroup.MISC));
 
     public static final Identifier LOCK_WAND_ID = new Identifier("betterbuilding", "lockwand");
+    public static final Identifier SET_PLANK_ID = new Identifier("betterbuilding", "setplank");
+    public static final Identifier GET_CURRENT_PLANK = new Identifier("betterbuilding", "getplank");
     @Override
     public void onInitialize() {
         Registry.register(Registry.ITEM, new Identifier("betterbuilding", "wood_wand"), WOOD_WAND);
@@ -26,6 +28,16 @@ public class BetterBuilding implements ModInitializer {
             }
             else {
                 WoodWand.lockedState.put(player.getUuid(), lockedState); //Only used first time the button is pressed
+            }
+        });
+        ServerPlayNetworking.registerGlobalReceiver(SET_PLANK_ID, (server, player, handler, buf, responseSender) -> {
+
+            int plank = buf.readInt();
+            if (WoodWand.nextPlank.containsKey(player.getUuid())){
+                WoodWand.nextPlank.replace(player.getUuid(), plank); // Update if for some reason the player is cached
+            }
+            else {
+                WoodWand.nextPlank.put(player.getUuid(), plank); // Initialize with value
             }
         });
 

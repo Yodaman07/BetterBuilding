@@ -1,12 +1,17 @@
 package legobrosbuild.betterbuilding;
 
 
+import legobrosbuild.betterbuilding.client.BetterBuildingClient;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.tag.BlockTags;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
@@ -43,8 +48,7 @@ public class WoodWand extends Item {
     @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
 
-        if (world.isClient())
-            return super.use(world, playerEntity, hand);
+        if (world.isClient()) return super.use(world, playerEntity, hand);
 
         HitResult hit = playerEntity.raycast(5, 0, false);
 
@@ -76,6 +80,15 @@ public class WoodWand extends Item {
                         nextPlank.put(playerEntity.getUuid(), 0);
                     }
                     int woodNum = nextPlank.get(playerEntity.getUuid());
+                    if (!lockedState.get(playerEntity.getUuid())){
+                        nextPlank.replace(playerEntity.getUuid(), (woodNum + 1) % 8); // Increments the next block
+                        woodNum += 1; // compensate for incrementing - won't update automatically
+
+                        // Send data to client
+                        PacketByteBuf buf = PacketByteBufs.create();
+                        buf.writeInt(woodNum);
+                        ServerPlayNetworking.send((ServerPlayerEntity) playerEntity, BetterBuilding.GET_CURRENT_PLANK, buf);
+                    }
                     String selectedBlock = Registry.BLOCK.getId(plankList.get(woodNum)).getPath(); // Registry id of the block (without namespace, e.g. "oak_planks")
 
                     Pattern pattern = Pattern.compile("(\\w)+_(\\w)+"); // REGEX
@@ -90,11 +103,6 @@ public class WoodWand extends Item {
                     }
 
                     world.setBlockState(blockPos, plankList.get(woodNum).getDefaultState()); // Sets block
-
-
-                    if (!lockedState.get(playerEntity.getUuid())){
-                        nextPlank.replace(playerEntity.getUuid(), (woodNum + 1) % 8); // Increments the next block
-                    }
                 }
                 break;
         }
