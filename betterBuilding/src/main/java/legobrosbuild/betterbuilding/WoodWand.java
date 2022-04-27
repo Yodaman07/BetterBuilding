@@ -1,8 +1,6 @@
 package legobrosbuild.betterbuilding;
 
-import legobrosbuild.betterbuilding.client.BetterBuildingClient;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -10,7 +8,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tag.BlockTags;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
@@ -36,7 +33,7 @@ public class WoodWand extends Item {
         super(settings);
     }
 
-    int woodNum = 0;
+    public int woodNum = 0;
     boolean status = false;
 
     @Override
@@ -47,9 +44,6 @@ public class WoodWand extends Item {
 
         woodNum %= 8;
 
-        // if (woodNum == 8){ The exact same thing
-        // woodNum = 0;
-        // }
 
         HitResult hit = playerEntity.raycast(5, 0, false);
 
@@ -92,20 +86,12 @@ public class WoodWand extends Item {
 
                 break;
         }
+
         /* Wrong place for this. Try BetterBuilding.onInitialize? This will run every time the player uses the item,
            and will create extra handlers. Also, the player won't be able to lock the item before the player uses it.
         */
 
-//        ServerPlayNetworking.registerGlobalReceiver(BetterBuildingClient.LOCK_WAND_ID, (server, player, handler, buf, responseSender) -> { // This line [17:41:22] [Server thread/ERROR] (Minecraft) Failed to handle packet net.minecraft.network.packet.c2s.play.PlayerInteractItemC2SPacket@271963c2, suppressing error
-//            //java.lang.RuntimeException: Cannot load class legobrosbuild.betterbuilding.client.BetterBuildingClient in environment type SERVER
-//            // PenguinEncounter says: store LOCK_WAND_ID in BetterBuilding.java, not BetterBuildingClient.java
-//
-//            int val = buf.readInt();
-//            System.out.println(val);
-//           server.execute(() -> {
-//            player.sendMessage(new LiteralText("Packet received"), false);
-//           });
-//        });
+
 
         return TypedActionResult.success(playerEntity.getStackInHand(hand));
     }
