@@ -36,7 +36,6 @@ public class WoodWand extends Item {
     }
 
     public int woodNum = 0;
-    boolean status = false;
 
     public static HashMap <UUID, Boolean> lockedState = new HashMap<> ();
     
@@ -56,7 +55,7 @@ public class WoodWand extends Item {
                 Blocks.JUNGLE_LOG, Blocks.OAK_LOG, Blocks.BIRCH_LOG, Blocks.SPRUCE_LOG);
 
         List<Block> plankList = List.of(Blocks.CRIMSON_PLANKS, Blocks.WARPED_PLANKS, Blocks.DARK_OAK_PLANKS, Blocks.ACACIA_PLANKS,
-                Blocks.JUNGLE_PLANKS, Blocks.OAK_PLANKS, Blocks.BIRCH_PLANKS, Blocks.SPRUCE_PLANKS);
+                Blocks.JUNGLE_PLANKS, Blocks.OAK_PLANKS, Blocks.BIRCH_PLANKS, Blocks.SPRUCE_PLANKS, Blocks.CRIMSON_PLANKS);
 
         switch (hit.getType()) {
             case MISS:
@@ -71,29 +70,28 @@ public class WoodWand extends Item {
 
                 // Update: use block tags instead of list. Helps with mod compatibility
                 if (blockState.isIn(BlockTags.PLANKS)) { // Makes sure the block is a plank: new, modernized version
+                    if (!lockedState.containsKey(playerEntity.getUuid())) {
+                        // default off
+                        lockedState.put(playerEntity.getUuid(), false);
+                    }
+
+                    if (!lockedState.get(playerEntity.getUuid())){
+                        woodNum++;
+                    }
 
                     String selectedBlock = Registry.BLOCK.getId(plankList.get(woodNum)).getPath(); // Registry id of the block (without namespace, e.g. "oak_planks")
 
                     Pattern pattern = Pattern.compile("(\\w)+_(\\w)+"); // REGEX
                     Matcher matcher = pattern.matcher(selectedBlock); // REGEX match
 
-                    if (!lockedState.containsKey(playerEntity.getUuid())) {
-                        // default off
-                        lockedState.put(playerEntity.getUuid(), false);
-                    }
 
                     if (matcher.find()) {
                         String result = matcher.group();
-                        String sel = "Currently Selected: " + result + "    Locked: " + lockedState.get(playerEntity.getUuid()); // Selected block
+                        String sel = "Currently Selected: " + result; // Selected block
                         playerEntity.sendMessage(Text.of(sel), true);
                     }
 
                     world.setBlockState(blockPos, plankList.get(woodNum).getDefaultState()); // Sets block
-
-
-                    if (!lockedState.get(playerEntity.getUuid())){
-                        woodNum++;
-                    }
                 }
 
                 break;

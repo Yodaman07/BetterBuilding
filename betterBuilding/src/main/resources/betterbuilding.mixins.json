@@ -3,10 +3,8 @@
   "minVersion": "0.8",
   "package": "legobrosbuild.betterbuilding.mixin",
   "compatibilityLevel": "JAVA_17",
-  "mixins": [
-  ],
-  "client": [
-  ],
+  "mixins": [],
+  "client": ["BindingMixin"],
   "injectors": {
     "defaultRequire": 1
   }
