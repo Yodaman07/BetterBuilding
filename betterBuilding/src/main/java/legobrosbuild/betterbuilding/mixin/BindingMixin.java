@@ -32,7 +32,7 @@ public class BindingMixin {
           Item isBoundItem = player.getStackInHand(hand).getItem();
 
           if (id == Registry.ITEM.getId(isBoundItem)) {
-              player.sendMessage(new LiteralText("CLICK ON BOUND WAND"), false); //Run code from the "WOOD WAND" Class
+              player.sendMessage(new LiteralText("YOU HAVE CLICKED ON THE BOUND WAND"), false); //Run code from the "WOOD WAND" Class
           }
     }
 }
