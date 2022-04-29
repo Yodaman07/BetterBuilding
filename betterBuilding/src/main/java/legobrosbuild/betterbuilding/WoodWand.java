@@ -8,7 +8,9 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tag.BlockTags;
+import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.hit.BlockHitResult;
@@ -17,6 +19,7 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -36,8 +39,76 @@ public class WoodWand extends Item {
     }
 
     public int woodNum = 0;
+    public static final long MAX_CHECKS = 2048;
 
     public static HashMap <UUID, Boolean> lockedState = new HashMap<> ();
+
+
+    int chainSwap(World world, BlockPos target, BlockState result, boolean useDiagonals) {
+        BlockState match = world.getBlockState(target);
+        ArrayList<BlockPos> used = new ArrayList<>();
+        ArrayList<BlockPos> next = new ArrayList<>();
+        int count = 0;
+        int changes = 0;
+        next.add(target);
+        while (next.size() > 0) {
+            ArrayList<BlockPos> now = new ArrayList<>(next);
+            next.clear();
+            ArrayList<BlockPos> possible = new ArrayList<>();
+            for (BlockPos check : now) {
+                boolean isCorrect = world.getBlockState(check).equals(match);
+                if (isCorrect) {
+                    changes += 1;
+                    world.setBlockState(check, result);
+                    if (useDiagonals) {
+                        // Don't ask how long this took.
+                        possible.add(check.add(-1, -1, -1));
+                        possible.add(check.add(-1, -1, 0));
+                        possible.add(check.add(-1, -1, 1));
+                        possible.add(check.add(-1, 0, -1));
+                        possible.add(check.add(-1, 0, 0));
+                        possible.add(check.add(-1, 0, 1));
+                        possible.add(check.add(-1, 1, -1));
+                        possible.add(check.add(-1, 1, 0));
+                        possible.add(check.add(-1, 1, 1));
+                        possible.add(check.add(0, -1, -1));
+                        possible.add(check.add(0, -1, 0));
+                        possible.add(check.add(0, -1, 1));
+                        possible.add(check.add(0, 0, -1));
+                        possible.add(check.add(0, 0, 1));
+                        possible.add(check.add(0, 1, -1));
+                        possible.add(check.add(0, 1, 0));
+                        possible.add(check.add(0, 1, 1));
+                        possible.add(check.add(1, -1, -1));
+                        possible.add(check.add(1, -1, 0));
+                        possible.add(check.add(1, -1, 1));
+                        possible.add(check.add(1, 0, -1));
+                        possible.add(check.add(1, 0, 0));
+                        possible.add(check.add(1, 0, 1));
+                        possible.add(check.add(1, 1, -1));
+                        possible.add(check.add(1, 1, 0));
+                        possible.add(check.add(1, 1, 1));
+                    } else {
+                        possible.add(check.add(1, 0, 0));
+                        possible.add(check.add(-1, 0, 0));
+                        possible.add(check.add(0, 1, 0));
+                        possible.add(check.add(0, -1, 0));
+                        possible.add(check.add(0, 0, 1));
+                        possible.add(check.add(0, 0, -1));
+                    }
+                }
+                count++;
+                if (count > MAX_CHECKS) {      // Limit max check count. (so you don't crash the server)
+                    return -1;
+                }
+            }
+            used.addAll(now);
+            possible.forEach(
+                    bp -> {if (!used.contains(bp)) next.add(bp);}
+            );
+        }
+        return changes;
+    }
     
     @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
@@ -56,7 +127,6 @@ public class WoodWand extends Item {
 
         List<Block> plankList = List.of(Blocks.CRIMSON_PLANKS, Blocks.WARPED_PLANKS, Blocks.DARK_OAK_PLANKS, Blocks.ACACIA_PLANKS,
                 Blocks.JUNGLE_PLANKS, Blocks.OAK_PLANKS, Blocks.BIRCH_PLANKS, Blocks.SPRUCE_PLANKS, Blocks.CRIMSON_PLANKS);
-
         switch (hit.getType()) {
             case MISS:
                 break;
@@ -91,9 +161,18 @@ public class WoodWand extends Item {
                         playerEntity.sendMessage(Text.of(sel), true);
                     }
 
-                    world.setBlockState(blockPos, plankList.get(woodNum).getDefaultState()); // Sets block
+                    if (playerEntity.isSneaking()) {
+                        /*
+                        HOW TO IMPROVE PERFORMANCE WITH THIS
+                        1. turn off useDiagonals - will increase performance by ~4x
+                        2. turn down MAX_CHECKS (will affect the maximum number of blocks modified)
+                         */
+                        int result = chainSwap(world, blockPos, plankList.get(woodNum).getDefaultState(), true);
+                        playerEntity.sendMessage(new LiteralText(result != -1 ? "Changed " + result + " blocks." : "Too many blocks!").formatted(result != -1 ? Formatting.GREEN : Formatting.RED), true);
+                    } else {
+                        world.setBlockState(blockPos, plankList.get(woodNum).getDefaultState()); // Sets block
+                    }
                 }
-
                 break;
         }
 
