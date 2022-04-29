@@ -1,7 +1,6 @@
 package legobrosbuild.betterbuilding.client;
 
 import legobrosbuild.betterbuilding.BetterBuilding;
-import legobrosbuild.betterbuilding.mixin.BindingMixin;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
