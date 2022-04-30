@@ -41,6 +41,8 @@ public class WoodWand extends Item {
     public static HashMap <UUID, Boolean> lockedState = new HashMap<> ();
 
 
+
+
     int chainSwap(World world, BlockPos target, BlockState result, boolean useDiagonals) {
         BlockState match = world.getBlockState(target);
         ArrayList<BlockPos> used = new ArrayList<>();  // Blocks we've already changed. Don't change them again.
