@@ -19,10 +19,7 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,20 +43,24 @@ public class WoodWand extends Item {
 
     int chainSwap(World world, BlockPos target, BlockState result, boolean useDiagonals) {
         BlockState match = world.getBlockState(target);
-        ArrayList<BlockPos> used = new ArrayList<>();
-        ArrayList<BlockPos> next = new ArrayList<>();
-        int count = 0;
-        int changes = 0;
-        next.add(target);
+        ArrayList<BlockPos> used = new ArrayList<>();  // Blocks we've already changed. Don't change them again.
+        ArrayList<BlockPos> next = new ArrayList<>();  // Blocks we need to check next time.
+        int count = 0;  // Number of blocks *checked*. (Not the number changed.)
+        int changes = 0;  // Number of blocks changed.
+        next.add(target);  // Initialize the queue with the start block.
         while (next.size() > 0) {
-            ArrayList<BlockPos> now = new ArrayList<>(next);
-            next.clear();
-            ArrayList<BlockPos> possible = new ArrayList<>();
+            ArrayList<BlockPos> now = new ArrayList<>(next);  // Blocks we're checking now.
+            next.clear();  // clear for later
+            ArrayList<BlockPos> possible = new ArrayList<>(); // Blocks that *could* change. (including ones we've already changed)
             for (BlockPos check : now) {
+                // Check that it's the same block as the target (the block that you clicked on)
                 boolean isCorrect = world.getBlockState(check).equals(match);
                 if (isCorrect) {
+                    // We're going to change this block
                     changes += 1;
                     world.setBlockState(check, result);
+                    // Add all the surrounding blocks to the list of blocks we need to the "possible" ArrayList.
+                    // Depending on the "useDiagonals" parameter, we'll add either
                     if (useDiagonals) {
                         // Don't ask how long this took.
                         possible.add(check.add(-1, -1, -1));
@@ -102,9 +103,9 @@ public class WoodWand extends Item {
                     return -1;
                 }
             }
-            used.addAll(now);
+            used.addAll(now);  // move all to the "used" list
             possible.forEach(
-                    bp -> {if (!used.contains(bp)) next.add(bp);}
+                    bp -> {if (!used.contains(bp) && !next.contains(bp)) next.add(bp);}  // change: don't add repeats
             );
         }
         return changes;
