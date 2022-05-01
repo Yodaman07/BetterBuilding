@@ -185,7 +185,6 @@ public class WoodWand extends Item {
             playerEntity.sendMessage(new LiteralText("You need to be in creative mode to use this item").formatted(Formatting.RED), false);
         }
 
-
         return TypedActionResult.success(playerEntity.getStackInHand(hand));
     }
 
