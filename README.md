@@ -1,7 +1,7 @@
-# BetterBuilding
+#  BetterBuilding
 **Description:** A Minecraft mod that adds better building tools to the game
 
-**Made By:** LegoBrosBuild and PengiunEncounter
+**Made By:** LegoBrosBuild, with assistance from PenguinEncounter
 
 ## Features
 1. Click on a plank to change its type
