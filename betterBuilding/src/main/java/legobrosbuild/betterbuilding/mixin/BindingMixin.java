@@ -37,7 +37,7 @@ public abstract class BindingMixin {
           Item isBoundItem = player.getStackInHand(hand).getItem();
 
           if (id == Registry.ITEM.getId(isBoundItem) && !world.isClient()) {
-              player.sendMessage(new LiteralText("YOU HAVE CLICKED ON THE BOUND WAND"), false); //Run code from the "WOOD WAND" Class // DOESN'T WORK ON SERVER
+              // DOESN'T WORK ON A SERVER
               boundWand.use(world, player, hand);
 
           }
