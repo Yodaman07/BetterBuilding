@@ -130,54 +130,61 @@ public class WoodWand extends Item {
 
         List<Block> plankList = List.of(Blocks.CRIMSON_PLANKS, Blocks.WARPED_PLANKS, Blocks.DARK_OAK_PLANKS, Blocks.ACACIA_PLANKS,
                 Blocks.JUNGLE_PLANKS, Blocks.OAK_PLANKS, Blocks.BIRCH_PLANKS, Blocks.SPRUCE_PLANKS, Blocks.CRIMSON_PLANKS);
-        switch (hit.getType()) {
-            case MISS:
-                break;
-            case BLOCK:
-                BlockHitResult blockHit = (BlockHitResult) hit;
-                BlockPos blockPos = blockHit.getBlockPos();
-                BlockState blockState = world.getBlockState(blockPos);
-                Block block = blockState.getBlock();
 
-                System.out.println(block);
+        if (playerEntity.isCreative()){
+            switch (hit.getType()) {
+                case MISS:
+                    break;
+                case BLOCK:
+                    BlockHitResult blockHit = (BlockHitResult) hit;
+                    BlockPos blockPos = blockHit.getBlockPos();
+                    BlockState blockState = world.getBlockState(blockPos);
+                    Block block = blockState.getBlock();
 
-                // Update: use block tags instead of list. Helps with mod compatibility
-                if (blockState.isIn(BlockTags.PLANKS)) { // Makes sure the block is a plank: new, modernized version
-                    if (!lockedState.containsKey(playerEntity.getUuid())) {
-                        // default off
-                        lockedState.put(playerEntity.getUuid(), false);
-                    }
+                    System.out.println(block);
 
-                    if (!lockedState.get(playerEntity.getUuid())){
-                        woodNum++;
-                    }
+                    // Update: use block tags instead of list. Helps with mod compatibility
+                    if (blockState.isIn(BlockTags.PLANKS)) { // Makes sure the block is a plank: new, modernized version
+                        if (!lockedState.containsKey(playerEntity.getUuid())) {
+                            // default off
+                            lockedState.put(playerEntity.getUuid(), false);
+                        }
 
-                    String selectedBlock = Registry.BLOCK.getId(plankList.get(woodNum)).getPath(); // Registry id of the block (without namespace, e.g. "oak_planks")
+                        if (!lockedState.get(playerEntity.getUuid())){
+                            woodNum++;
+                        }
 
-                    Pattern pattern = Pattern.compile("(\\w)+_(\\w)+"); // REGEX
-                    Matcher matcher = pattern.matcher(selectedBlock); // REGEX match
+                        String selectedBlock = Registry.BLOCK.getId(plankList.get(woodNum)).getPath(); // Registry id of the block (without namespace, e.g. "oak_planks")
+
+                        Pattern pattern = Pattern.compile("(\\w)+_(\\w)+"); // REGEX
+                        Matcher matcher = pattern.matcher(selectedBlock); // REGEX match
 
 
-                    if (matcher.find()) {
-                        String result = matcher.group();
-                        String sel = "Currently Selected: " + result; // Selected block
-                        playerEntity.sendMessage(Text.of(sel), true);
-                    }
+                        if (matcher.find()) {
+                            String result = matcher.group();
+                            String sel = "Currently Selected: " + result; // Selected block
+                            playerEntity.sendMessage(Text.of(sel), true);
+                        }
 
-                    if (playerEntity.isSneaking()) {
+                        if (playerEntity.isSneaking()) {
                         /*
                         HOW TO IMPROVE PERFORMANCE WITH THIS
                         1. turn off useDiagonals - will increase performance by ~4x
                         2. turn down MAX_CHECKS (will affect the maximum number of blocks modified)
                          */
-                        int result = chainSwap(world, blockPos, plankList.get(woodNum).getDefaultState(), true);
-                        playerEntity.sendMessage(new LiteralText(result != -1 ? "Changed " + result + " blocks." : "Too many blocks!").formatted(result != -1 ? Formatting.GREEN : Formatting.RED), true);
-                    } else {
-                        world.setBlockState(blockPos, plankList.get(woodNum).getDefaultState()); // Sets block
+                            int result = chainSwap(world, blockPos, plankList.get(woodNum).getDefaultState(), true);
+                            playerEntity.sendMessage(new LiteralText(result != -1 ? "Changed " + result + " blocks." : "Too many blocks!").formatted(result != -1 ? Formatting.GREEN : Formatting.RED), true);
+                        } else {
+                            world.setBlockState(blockPos, plankList.get(woodNum).getDefaultState()); // Sets block
+                        }
                     }
-                }
-                break;
+                    break;
+            }
         }
+        else{
+            playerEntity.sendMessage(new LiteralText("You need to be in creative mode to use this item").formatted(Formatting.RED), false);
+        }
+
 
         return TypedActionResult.success(playerEntity.getStackInHand(hand));
     }
