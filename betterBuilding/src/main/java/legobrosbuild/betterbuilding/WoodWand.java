@@ -27,6 +27,8 @@ import java.util.regex.Pattern;
 
 //TO ADD: GUI to sort wood order
 
+//TO ADD: Add a method for other wood types with a param of the list
+
 //TO ADD: Locked status on actionbar (check)
 
 public class WoodWand extends Item {
