@@ -29,6 +29,8 @@ import java.util.regex.Pattern;
 
 //TO ADD: Add a method for other wood types with a param of the list
 
+//TO ADD: Save the player settings, bound wand and selected block on close
+
 //TO ADD: Locked status on actionbar (check)
 
 public class WoodWand extends Item {
@@ -41,8 +43,7 @@ public class WoodWand extends Item {
     public static final long MAX_CHECKS = 2048;
 
     public static HashMap <UUID, Boolean> lockedState = new HashMap<> ();
-
-
+    public static boolean useDiagonals = true;
 
 
     int chainSwap(World world, BlockPos target, BlockState result, boolean useDiagonals) {
@@ -174,7 +175,7 @@ public class WoodWand extends Item {
                         1. turn off useDiagonals - will increase performance by ~4x
                         2. turn down MAX_CHECKS (will affect the maximum number of blocks modified)
                          */
-                            int result = chainSwap(world, blockPos, plankList.get(woodNum).getDefaultState(), true);
+                            int result = chainSwap(world, blockPos, plankList.get(woodNum).getDefaultState(), useDiagonals);
                             playerEntity.sendMessage(new LiteralText(result != -1 ? "Changed " + result + " blocks." : "Too many blocks!").formatted(result != -1 ? Formatting.GREEN : Formatting.RED), true);
                         } else {
                             world.setBlockState(blockPos, plankList.get(woodNum).getDefaultState()); // Sets block
