@@ -19,7 +19,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(OptionsScreen.class)
 public abstract class OptionScreenMixin extends Screen {
 
-
     @Shadow @Final private GameOptions settings;
 
 
@@ -30,8 +29,8 @@ public abstract class OptionScreenMixin extends Screen {
     @Inject(at = @At("RETURN"), method = "init()V")
     private void init(CallbackInfo info) {
         this.addDrawableChild(new ButtonWidget(this.width / 2 - 155, this.height / 6 + 144 - 6, 150, 20, new TranslatableText("options.BetterBuilding"), button ->{
-            assert this.client != null;
-            this.client.setScreen(new BBSettingsScreen(this, this.settings));
+                assert this.client != null;
+                this.client.setScreen(new BBSettingsScreen(this, this.settings));
             }));
 
 
