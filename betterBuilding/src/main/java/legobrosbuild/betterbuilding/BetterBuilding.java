@@ -23,6 +23,8 @@ public class BetterBuilding implements ModInitializer {
 
     public static final Identifier LOCK_WAND_ID = new Identifier("betterbuilding", "lockwand");
 
+    public static final Identifier USE_DIAGONALS_ID = new Identifier("betterbuilding", "usediagonals");
+
     public static HashMap <UUID, Item> boundWand = new HashMap<>();
     @Override
     public void onInitialize() {
@@ -31,6 +33,7 @@ public class BetterBuilding implements ModInitializer {
         ServerPlayNetworking.registerGlobalReceiver(LOCK_WAND_ID, (server, player, handler, buf, responseSender) -> {
 
             boolean lockedState = buf.readBoolean();
+
             if (WoodWand.lockedState.containsKey(player.getUuid())){
                 WoodWand.lockedState.replace(player.getUuid(),lockedState); //Updates HashMap
             }
@@ -39,11 +42,24 @@ public class BetterBuilding implements ModInitializer {
             }
         });
 
-        CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) ->  {
+        ServerPlayNetworking.registerGlobalReceiver(USE_DIAGONALS_ID, ((server, player, handler, buf, responseSender) -> { //Receives the packet from "BBSettingsScreen.java"
+            boolean useDiagonalsBool = buf.readBoolean();
+
+            if (WoodWand.useDiagonalsHash.containsKey(player.getUuid())){
+                WoodWand.useDiagonalsHash.replace(player.getUuid(),useDiagonalsBool);
+            }
+            else{
+                WoodWand.useDiagonalsHash.put(player.getUuid(), useDiagonalsBool);
+            }
+        }));
+
+
+
+        CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) ->  { //Registers the command
             dispatcher.register(literal("wand") //Base Level Command
                     .then(literal("bind") //Sub Command
                         .executes(context -> {
-                            MinecraftClient client = MinecraftClient.getInstance(); //Add logic to prevent adding blocks
+                            MinecraftClient client = MinecraftClient.getInstance();
 
                             ItemStack stackInHand = client.player.getStackInHand(client.player.getActiveHand());
                             Item bound = stackInHand.getItem();

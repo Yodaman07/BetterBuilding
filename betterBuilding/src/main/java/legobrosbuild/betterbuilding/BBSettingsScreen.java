@@ -1,21 +1,25 @@
 package legobrosbuild.betterbuilding;
 
+
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ScreenTexts;
 import net.minecraft.client.gui.screen.option.GameOptionsScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.CyclingButtonWidget;
-import net.minecraft.client.gui.widget.ToggleButtonWidget;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
-import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
-
 import static legobrosbuild.betterbuilding.WoodWand.useDiagonals;
 
+
 public class BBSettingsScreen extends GameOptionsScreen {
+
 
     public BBSettingsScreen(Screen parent, GameOptions options) {
         super(parent, options, new TranslatableText("options.bbSettings.title"));
@@ -30,8 +34,20 @@ public class BBSettingsScreen extends GameOptionsScreen {
 
 
         super.addDrawableChild(CyclingButtonWidget.onOffBuilder(new LiteralText(""), new LiteralText("")).build(this.width / 2 - 155, this.height / 6 - 12 + 24, 150, 20, new LiteralText("ERROR"), (button, value) -> {
+            MinecraftClient client = MinecraftClient.getInstance();
+
             useDiagonals =! useDiagonals;
+
+            PacketByteBuf buf = PacketByteBufs.create(); //Makes the packet
+            buf.writeBoolean(useDiagonals);
+
+
+            if(client.isInSingleplayer() || client.getCurrentServerEntry() != null || client.isConnectedToRealms()) {
+                ClientPlayNetworking.send(BetterBuilding.USE_DIAGONALS_ID, buf); //Sends the packet
+            }
+
             super.clearChildren();
+
         })).setMessage(new LiteralText(useDiagonals ? "True" : "False").formatted(useDiagonals? Formatting.GREEN: Formatting.RED));
 
         super.addDrawableChild(new ButtonWidget(this.width / 2 + 5, this.height / 6 -12 + 24, 150, 20, new TranslatableText("bbSettings.otherOption"), button1 -> System.out.println("Toggled")));
