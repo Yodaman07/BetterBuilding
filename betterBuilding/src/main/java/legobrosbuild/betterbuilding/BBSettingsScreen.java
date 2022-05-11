@@ -1,6 +1,7 @@
 package legobrosbuild.betterbuilding;
 
 
+
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.MinecraftClient;
@@ -44,6 +45,7 @@ public class BBSettingsScreen extends GameOptionsScreen {
 
             if(client.isInSingleplayer() || client.getCurrentServerEntry() != null || client.isConnectedToRealms()) {
                 ClientPlayNetworking.send(BetterBuilding.USE_DIAGONALS_ID, buf); //Sends the packet
+
             }
 
             super.clearChildren();
