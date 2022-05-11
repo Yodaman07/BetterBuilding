@@ -45,6 +45,7 @@ public class WoodWand extends Item {
 
     public static HashMap <UUID, Boolean> lockedState = new HashMap<> ();
     public static HashMap <UUID, Boolean> useDiagonalsHash = new HashMap<>();
+
     public static boolean useDiagonals = true;
 
 
@@ -126,7 +127,6 @@ public class WoodWand extends Item {
 
         woodNum %= 8;
 
-
         HitResult hit = playerEntity.raycast(5, 0, false);
 
         // plankList made obsolete by tag system + registry
@@ -161,8 +161,8 @@ public class WoodWand extends Item {
 
                         String selectedBlock = Registry.BLOCK.getId(plankList.get(woodNum)).getPath(); // Registry id of the block (without namespace, e.g. "oak_planks")
 
-                        Pattern pattern = Pattern.compile("(\\w)+_(\\w)+"); // REGEX
-                        Matcher matcher = pattern.matcher(selectedBlock); // REGEX match
+                        Pattern pattern = Pattern.compile("(\\w)+_(\\w)+");
+                        Matcher matcher = pattern.matcher(selectedBlock);
 
 
                         if (matcher.find()) {
@@ -177,7 +177,6 @@ public class WoodWand extends Item {
                         1. turn off useDiagonals - will increase performance by ~4x
                         2. turn down MAX_CHECKS (will affect the maximum number of blocks modified)
                          */
-//                            useDiagonalsHash.putIfAbsent(playerEntity.getUuid(), true);
 
                             int result = chainSwap(world, blockPos, plankList.get(woodNum).getDefaultState(), useDiagonalsHash.get(playerEntity.getUuid()));
 
@@ -186,6 +185,7 @@ public class WoodWand extends Item {
                         } else {
                             world.setBlockState(blockPos, plankList.get(woodNum).getDefaultState()); // Sets block
                         }
+
                     }
                     break;
             }

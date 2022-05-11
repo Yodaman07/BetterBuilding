@@ -22,8 +22,8 @@ public class BetterBuilding implements ModInitializer {
     public static final WoodWand WOOD_WAND = new WoodWand(new FabricItemSettings().group(ItemGroup.MISC));
 
     public static final Identifier LOCK_WAND_ID = new Identifier("betterbuilding", "lockwand");
-
     public static final Identifier USE_DIAGONALS_ID = new Identifier("betterbuilding", "usediagonals");
+
 
     public static HashMap <UUID, Item> boundWand = new HashMap<>();
     @Override
