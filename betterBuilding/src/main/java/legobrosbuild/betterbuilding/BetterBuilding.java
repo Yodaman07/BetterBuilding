@@ -22,6 +22,8 @@ public class BetterBuilding implements ModInitializer {
     public static final WoodWand WOOD_WAND = new WoodWand(new FabricItemSettings().group(ItemGroup.MISC));
 
     public static final Identifier LOCK_WAND_ID = new Identifier("betterbuilding", "lockwand");
+    public static final Identifier SET_WOOD_ID = new Identifier("betterbuilding", "setwood");
+    public static final Identifier GET_WOOD_ID = new Identifier("betterbuilding", "getwood");
     public static final Identifier USE_DIAGONALS_ID = new Identifier("betterbuilding", "usediagonals");
 
 
@@ -42,7 +44,7 @@ public class BetterBuilding implements ModInitializer {
             }
         });
 
-        ServerPlayNetworking.registerGlobalReceiver(USE_DIAGONALS_ID, ((server, player, handler, buf, responseSender) -> { //Receives the packet from "BBSettingsScreen.java"
+        ServerPlayNetworking.registerGlobalReceiver(USE_DIAGONALS_ID, (server, player, handler, buf, responseSender) -> { //Receives the packet from "BBSettingsScreen.java"
             boolean useDiagonalsBool = buf.readBoolean();
 
             if (WoodWand.useDiagonalsHash.containsKey(player.getUuid())){
@@ -51,9 +53,16 @@ public class BetterBuilding implements ModInitializer {
             else{
                 WoodWand.useDiagonalsHash.put(player.getUuid(), useDiagonalsBool);
             }
-        }));
+        });
 
-
+        ServerPlayNetworking.registerGlobalReceiver(SET_WOOD_ID, (server, player, handler, buf, responseSender) -> { // Receives the packet on join from BetterBuildingClient
+            int data = buf.readInt();
+            if (WoodWand.woodNum.containsKey(player.getUuid())) {
+                WoodWand.woodNum.replace(player.getUuid(), data);
+            } else {
+                WoodWand.woodNum.put(player.getUuid(), data);
+            }
+        });
 
         CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) ->  { //Registers the command
             dispatcher.register(literal("wand") //Base Level Command

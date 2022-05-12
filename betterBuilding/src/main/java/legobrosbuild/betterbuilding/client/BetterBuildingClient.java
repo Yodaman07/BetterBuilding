@@ -7,8 +7,12 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.option.StickyKeyBinding;
 import net.minecraft.network.PacketByteBuf;
@@ -16,13 +20,15 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 import org.lwjgl.glfw.GLFW;
 
+import static legobrosbuild.betterbuilding.BetterBuilding.GET_WOOD_ID;
+
 
 @Environment(EnvType.CLIENT)
 public class BetterBuildingClient implements ClientModInitializer {
 
 
     public boolean locked = false;
-
+    public int currentWoodId = 0;
 
     @Override
     public void onInitializeClient() {
@@ -46,7 +52,18 @@ public class BetterBuildingClient implements ClientModInitializer {
             }
         });
 
+        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
+            // Send the lock status to the server
+            PacketByteBuf buf = PacketByteBufs.create();
+            buf.writeBoolean(locked);
+            ClientPlayNetworking.send(BetterBuilding.LOCK_WAND_ID, buf);
 
+            // Send the wood id to the server
+            buf = PacketByteBufs.create();
+            buf.writeInt(currentWoodId);
+            ClientPlayNetworking.send(BetterBuilding.SET_WOOD_ID, buf);
+        });
 
+        ClientPlayNetworking.registerGlobalReceiver(GET_WOOD_ID, (client, handler, buf, responseSender) -> currentWoodId = buf.readInt());  // recv wood id from server
     }
 }
