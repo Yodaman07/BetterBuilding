@@ -8,6 +8,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tag.BlockTags;
+import net.minecraft.tag.TagKey;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -48,7 +49,46 @@ public class WoodWand extends Item {
 
     public static boolean useDiagonals = true;
 
+    void setBlock(List<Block> list, PlayerEntity playerEntity, BlockState blockState, World world, BlockPos pos, TagKey tag){
+        if (blockState.isIn(tag)) { // Makes sure the block is a plank: new, modernized version
+            if (!lockedState.containsKey(playerEntity.getUuid())) {
+                // default off
+                lockedState.put(playerEntity.getUuid(), false);
+            }
 
+            if (!lockedState.get(playerEntity.getUuid())){
+                woodNum++;
+            }
+
+            String selectedBlock = Registry.BLOCK.getId(list.get(woodNum)).getPath(); // Registry id of the block (without namespace, e.g. "oak_planks")
+
+            Pattern pattern = Pattern.compile("(\\w)+_(\\w)+");
+            Matcher matcher = pattern.matcher(selectedBlock);
+
+
+            if (matcher.find()) {
+                String result = matcher.group();
+                String sel = "Currently Selected: " + result; // Selected block
+                playerEntity.sendMessage(Text.of(sel), true);
+            }
+
+            if (playerEntity.isSneaking()) {
+                        /*
+                        HOW TO IMPROVE PERFORMANCE WITH THIS
+                        1. turn off useDiagonals - will increase performance by ~4x
+                        2. turn down MAX_CHECKS (will affect the maximum number of blocks modified)
+                         */
+
+                int result = chainSwap(world, pos, list.get(woodNum).getDefaultState(), useDiagonalsHash.get(playerEntity.getUuid()));
+
+
+                playerEntity.sendMessage(new LiteralText(result != -1 ? "Changed " + result + " blocks." : "Too many blocks!").formatted(result != -1 ? Formatting.GREEN : Formatting.RED), true);
+            } else {
+                world.setBlockState(pos, list.get(woodNum).getDefaultState()); // Sets block
+            }
+
+        }
+    }
     int chainSwap(World world, BlockPos target, BlockState result, boolean useDiagonals) {
         BlockState match = world.getBlockState(target);
         ArrayList<BlockPos> used = new ArrayList<>();  // Blocks we've already changed. Don't change them again.
@@ -149,44 +189,9 @@ public class WoodWand extends Item {
                     System.out.println(block);
 
                     // Update: use block tags instead of list. Helps with mod compatibility
-                    if (blockState.isIn(BlockTags.PLANKS)) { // Makes sure the block is a plank: new, modernized version
-                        if (!lockedState.containsKey(playerEntity.getUuid())) {
-                            // default off
-                            lockedState.put(playerEntity.getUuid(), false);
-                        }
+                    setBlock(plankList, playerEntity,blockState,world,blockPos, BlockTags.PLANKS);
+                    setBlock(logList, playerEntity,blockState,world,blockPos, BlockTags.LOGS); //Sync the plank and log type together
 
-                        if (!lockedState.get(playerEntity.getUuid())){
-                            woodNum++;
-                        }
-
-                        String selectedBlock = Registry.BLOCK.getId(plankList.get(woodNum)).getPath(); // Registry id of the block (without namespace, e.g. "oak_planks")
-
-                        Pattern pattern = Pattern.compile("(\\w)+_(\\w)+");
-                        Matcher matcher = pattern.matcher(selectedBlock);
-
-
-                        if (matcher.find()) {
-                            String result = matcher.group();
-                            String sel = "Currently Selected: " + result; // Selected block
-                            playerEntity.sendMessage(Text.of(sel), true);
-                        }
-
-                        if (playerEntity.isSneaking()) {
-                        /*
-                        HOW TO IMPROVE PERFORMANCE WITH THIS
-                        1. turn off useDiagonals - will increase performance by ~4x
-                        2. turn down MAX_CHECKS (will affect the maximum number of blocks modified)
-                         */
-
-                            int result = chainSwap(world, blockPos, plankList.get(woodNum).getDefaultState(), useDiagonalsHash.get(playerEntity.getUuid()));
-
-
-                            playerEntity.sendMessage(new LiteralText(result != -1 ? "Changed " + result + " blocks." : "Too many blocks!").formatted(result != -1 ? Formatting.GREEN : Formatting.RED), true);
-                        } else {
-                            world.setBlockState(blockPos, plankList.get(woodNum).getDefaultState()); // Sets block
-                        }
-
-                    }
                     break;
             }
         }
