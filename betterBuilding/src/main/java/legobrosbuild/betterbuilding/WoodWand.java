@@ -1,12 +1,16 @@
 package legobrosbuild.betterbuilding;
 
 
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.tag.BlockTags;
 import net.minecraft.tag.TagKey;
 import net.minecraft.text.LiteralText;
@@ -23,6 +27,8 @@ import net.minecraft.util.math.BlockPos;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static legobrosbuild.betterbuilding.BetterBuilding.GET_WOOD_ID;
 
 
 //TO ADD: GUI to sort wood order
@@ -41,7 +47,7 @@ public class WoodWand extends Item {
         super(settings);
     }
 
-    public int woodNum = 0;
+    public static HashMap<UUID, Integer> woodNum = new HashMap<>();
     public static final long MAX_CHECKS = 2048;
 
     public static HashMap <UUID, Boolean> lockedState = new HashMap<> ();
@@ -49,18 +55,30 @@ public class WoodWand extends Item {
 
     public static boolean useDiagonals = true;
 
-    void setBlock(List<Block> list, PlayerEntity playerEntity, BlockState blockState, World world, BlockPos pos, TagKey tag){
+    void setBlock(List<Block> list, PlayerEntity playerEntity, BlockState blockState, World world, BlockPos pos, TagKey<Block> tag) {
         if (blockState.isIn(tag)) { // Makes sure the block is a plank: new, modernized version
             if (!lockedState.containsKey(playerEntity.getUuid())) {
                 // default off
                 lockedState.put(playerEntity.getUuid(), false);
             }
-
-            if (!lockedState.get(playerEntity.getUuid())){
-                woodNum++;
+            if (!woodNum.containsKey(playerEntity.getUuid())) {
+                // default off
+                woodNum.put(playerEntity.getUuid(), 0);
             }
 
-            String selectedBlock = Registry.BLOCK.getId(list.get(woodNum)).getPath(); // Registry id of the block (without namespace, e.g. "oak_planks")
+            if (!lockedState.get(playerEntity.getUuid())){
+                woodNum.replace(playerEntity.getUuid(), woodNum.get(playerEntity.getUuid()) + 1);
+                woodNum.replace(playerEntity.getUuid(), woodNum.get(playerEntity.getUuid()) % 8);
+
+                // Send packet
+                PacketByteBuf buf = PacketByteBufs.create();
+                buf.writeInt(woodNum.get(playerEntity.getUuid()));
+                ServerPlayNetworking.send((ServerPlayerEntity) playerEntity, GET_WOOD_ID, buf);
+            }
+
+            int myWoodNum = woodNum.get(playerEntity.getUuid());
+
+            String selectedBlock = Registry.BLOCK.getId(list.get(myWoodNum)).getPath(); // Registry id of the block (without namespace, e.g. "oak_planks")
 
             Pattern pattern = Pattern.compile("(\\w)+_(\\w)+");
             Matcher matcher = pattern.matcher(selectedBlock);
@@ -79,12 +97,12 @@ public class WoodWand extends Item {
                         2. turn down MAX_CHECKS (will affect the maximum number of blocks modified)
                          */
 
-                int result = chainSwap(world, pos, list.get(woodNum).getDefaultState(), useDiagonalsHash.get(playerEntity.getUuid()));
+                int result = chainSwap(world, pos, list.get(myWoodNum).getDefaultState(), useDiagonalsHash.get(playerEntity.getUuid()));
 
 
                 playerEntity.sendMessage(new LiteralText(result != -1 ? "Changed " + result + " blocks." : "Too many blocks!").formatted(result != -1 ? Formatting.GREEN : Formatting.RED), true);
             } else {
-                world.setBlockState(pos, list.get(woodNum).getDefaultState()); // Sets block
+                world.setBlockState(pos, list.get(myWoodNum).getDefaultState()); // Sets block
             }
 
         }
@@ -164,8 +182,6 @@ public class WoodWand extends Item {
 
         if (world.isClient())
             return super.use(world, playerEntity, hand);
-
-        woodNum %= 8;
 
         HitResult hit = playerEntity.raycast(5, 0, false);
 

@@ -20,13 +20,15 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 import org.lwjgl.glfw.GLFW;
 
+import static legobrosbuild.betterbuilding.BetterBuilding.GET_WOOD_ID;
+
 
 @Environment(EnvType.CLIENT)
 public class BetterBuildingClient implements ClientModInitializer {
 
 
     public boolean locked = false;
-
+    public int currentWoodId = 0;
 
     @Override
     public void onInitializeClient() {
@@ -55,6 +57,13 @@ public class BetterBuildingClient implements ClientModInitializer {
             PacketByteBuf buf = PacketByteBufs.create();
             buf.writeBoolean(locked);
             ClientPlayNetworking.send(BetterBuilding.LOCK_WAND_ID, buf);
+
+            // Send the wood id to the server
+            buf = PacketByteBufs.create();
+            buf.writeInt(currentWoodId);
+            ClientPlayNetworking.send(BetterBuilding.SET_WOOD_ID, buf);
         });
+
+        ClientPlayNetworking.registerGlobalReceiver(GET_WOOD_ID, (client, handler, buf, responseSender) -> currentWoodId = buf.readInt());  // recv wood id from server
     }
 }
