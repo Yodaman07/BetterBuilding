@@ -4,7 +4,7 @@
   "package": "legobrosbuild.betterbuilding.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [],
-  "client": ["BindingMixin","OptionScreenMixin","HudMixin","UseDiagonalsFixMixin"],
+  "client": ["BindingMixin","OptionScreenMixin","HudMixin"],
   "injectors": {
     "defaultRequire": 1
   }

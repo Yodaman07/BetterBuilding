@@ -67,13 +67,13 @@ public class WoodWand extends Item {
             }
 
             if (!lockedState.get(playerEntity.getUuid())){
-                woodNum.replace(playerEntity.getUuid(), woodNum.get(playerEntity.getUuid()) + 1);
-                woodNum.replace(playerEntity.getUuid(), woodNum.get(playerEntity.getUuid()) % 8);
+                woodNum.replace(playerEntity.getUuid(), woodNum.get(playerEntity.getUuid()) + 1); //Adds 1
+                woodNum.replace(playerEntity.getUuid(), woodNum.get(playerEntity.getUuid()) % 8); //Makes sure it is divisible by 8
 
                 // Send packet
                 PacketByteBuf buf = PacketByteBufs.create();
                 buf.writeInt(woodNum.get(playerEntity.getUuid()));
-                ServerPlayNetworking.send((ServerPlayerEntity) playerEntity, GET_WOOD_ID, buf);
+                ServerPlayNetworking.send((ServerPlayerEntity) playerEntity, GET_WOOD_ID, buf); //Send the woodnum in GET_WOOD_ID
             }
 
             int myWoodNum = woodNum.get(playerEntity.getUuid());
@@ -98,7 +98,6 @@ public class WoodWand extends Item {
                          */
 
                 int result = chainSwap(world, pos, list.get(myWoodNum).getDefaultState(), useDiagonalsHash.get(playerEntity.getUuid()));
-
 
                 playerEntity.sendMessage(new LiteralText(result != -1 ? "Changed " + result + " blocks." : "Too many blocks!").formatted(result != -1 ? Formatting.GREEN : Formatting.RED), true);
             } else {
@@ -187,7 +186,7 @@ public class WoodWand extends Item {
 
         // plankList made obsolete by tag system + registry
         List<Block> logList = List.of(Blocks.CRIMSON_STEM, Blocks.WARPED_STEM, Blocks.DARK_OAK_LOG, Blocks.ACACIA_LOG,
-                Blocks.JUNGLE_LOG, Blocks.OAK_LOG, Blocks.BIRCH_LOG, Blocks.SPRUCE_LOG);
+                Blocks.JUNGLE_LOG, Blocks.OAK_LOG, Blocks.BIRCH_LOG, Blocks.SPRUCE_LOG, Blocks.CRIMSON_STEM);
 
         List<Block> plankList = List.of(Blocks.CRIMSON_PLANKS, Blocks.WARPED_PLANKS, Blocks.DARK_OAK_PLANKS, Blocks.ACACIA_PLANKS,
                 Blocks.JUNGLE_PLANKS, Blocks.OAK_PLANKS, Blocks.BIRCH_PLANKS, Blocks.SPRUCE_PLANKS, Blocks.CRIMSON_PLANKS);
