@@ -4,11 +4,14 @@ package legobrosbuild.betterbuilding;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
@@ -25,9 +28,9 @@ public class BetterBuilding implements ModInitializer {
     public static final Identifier SET_WOOD_ID = new Identifier("betterbuilding", "setwood");
     public static final Identifier GET_WOOD_ID = new Identifier("betterbuilding", "getwood");
     public static final Identifier USE_DIAGONALS_ID = new Identifier("betterbuilding", "usediagonals");
+//    public static final Identifier WAND_BIND_ID = new Identifier("betterbuilding", "wandbind");
 
-
-    public static HashMap <UUID, Item> boundWand = new HashMap<>();
+    public static HashMap <UUID, Identifier> boundWand = new HashMap<>();
     @Override
     public void onInitialize() {
         Registry.register(Registry.ITEM, new Identifier("betterbuilding", "wood_wand"), WOOD_WAND);
@@ -68,20 +71,24 @@ public class BetterBuilding implements ModInitializer {
             dispatcher.register(literal("wand") //Base Level Command
                     .then(literal("bind") //Sub Command
                         .executes(context -> {
-                            MinecraftClient client = MinecraftClient.getInstance();
+                            final ServerCommandSource source = context.getSource();
 
-                            ItemStack stackInHand = client.player.getStackInHand(client.player.getActiveHand());
-                            Item bound = stackInHand.getItem();
+                            ItemStack stackInHand = source.getPlayer().getStackInHand(source.getPlayer().getActiveHand());
+                            Identifier bound = Registry.ITEM.getId(stackInHand.getItem());
+//                            PacketByteBuf buf = PacketByteBufs.create();
+//                            buf.writeItemStack(stackInHand);
+//
+//                            ServerPlayNetworking.send(source.getPlayer(), WAND_BIND_ID, buf);
+//                            System.out.println("Packet Sent");
 
-                            if (boundWand.containsKey(client.player.getUuid())) {
-                                boundWand.replace(client.player.getUuid(), bound);
+                            if (boundWand.containsKey(source.getPlayer().getUuid())) {
+                                boundWand.replace(source.getPlayer().getUuid(), bound);
                             }
                             else{
-                                boundWand.put(client.player.getUuid(), bound);
+                                boundWand.put(source.getPlayer().getUuid(), bound);
                             }
 
-                            client.player.sendMessage(new LiteralText("Wand Bound to " + stackInHand), false);
-
+                            source.getPlayer().sendMessage(new LiteralText("Wand Bound to " + stackInHand), false);
                             return 1;
                   })
                )

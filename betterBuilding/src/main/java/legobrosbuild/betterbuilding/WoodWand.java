@@ -50,8 +50,9 @@ public class WoodWand extends Item {
     public static HashMap<UUID, Integer> woodNum = new HashMap<>();
     public static final long MAX_CHECKS = 2048;
 
-    public static HashMap <UUID, Boolean> lockedState = new HashMap<> ();
+    public static HashMap <UUID, Boolean> lockedState = new HashMap<>();
     public static HashMap <UUID, Boolean> useDiagonalsHash = new HashMap<>();
+
 
     public static boolean useDiagonals = true;
 
@@ -181,7 +182,7 @@ public class WoodWand extends Item {
 
         if (world.isClient())
             return super.use(world, playerEntity, hand);
-
+        System.out.println(BetterBuilding.boundWand.get(playerEntity.getUuid()) + "A");
         HitResult hit = playerEntity.raycast(5, 0, false);
 
         // plankList made obsolete by tag system + registry

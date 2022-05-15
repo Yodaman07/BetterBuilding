@@ -106,7 +106,7 @@ public class BetterBuildingClient implements ClientModInitializer {
             locked = Boolean.parseBoolean(matchList.get(1));
             currentWoodId = Integer.parseInt(matchList.get(2));
 
-            System.out.println("Joined World");
+            System.out.println("Config file successfully opened");
 
             // Send the lock status to the server
             PacketByteBuf buf = PacketByteBufs.create();
