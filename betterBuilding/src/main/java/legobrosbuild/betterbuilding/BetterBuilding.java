@@ -67,7 +67,7 @@ public class BetterBuilding implements ModInitializer {
         });
 
         CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) ->  { //Registers the command
-            dispatcher.register(literal("DetectBoundWand") //Base Level Command
+            dispatcher.register(literal("wand") //Base Level Command
                     .then(literal("bind") //Sub Command
                         .executes(context -> {
                             final ServerCommandSource source = context.getSource();
