@@ -182,7 +182,7 @@ public class WoodWand extends Item {
 
         if (world.isClient())
             return super.use(world, playerEntity, hand);
-        System.out.println(BetterBuilding.boundWand.get(playerEntity.getUuid()) + "A");
+
         HitResult hit = playerEntity.raycast(5, 0, false);
 
         // plankList made obsolete by tag system + registry
