@@ -32,11 +32,15 @@ public abstract class BindingMixin {
 
     @Inject(at = @At("HEAD"), method = "use", cancellable = true)
     private void init(World world, PlayerEntity player, Hand hand, CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
-                DetectBoundWand.init();
-
-
-
-
+        // server only
+        if (world.isClient) return;
+        if (DetectBoundWand.check(player.getUuid(), player.getStackInHand(hand))) {
+            // do something
+            System.out.println("match");
+            cir.setReturnValue(TypedActionResult.success(player.getStackInHand(hand)));  // better
+        } else {
+            System.out.println("no match");
+        }
     }
 }
 

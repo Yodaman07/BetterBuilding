@@ -80,9 +80,17 @@ public class BetterBuilding implements ModInitializer {
                             Identifier bound = Registry.ITEM.getId(stackInHand.getItem());
 
                             System.out.println("Saving " + bound);
+                            System.out.println("Client? " + (context.getSource().getWorld().isClient?"Ye":"No"));
 
                             PacketByteBuf buf = PacketByteBufs.create();
                             buf.writeIdentifier(bound);
+
+                            // bind
+                            if (boundWand.containsKey(source.getPlayer().getUuid())) {
+                                boundWand.replace(source.getPlayer().getUuid(), bound);
+                            } else {
+                                boundWand.put(source.getPlayer().getUuid(), bound);
+                            }
                             ServerPlayNetworking.send(source.getPlayer(), BIND_WAND_ID, buf);
 
                             source.getPlayer().sendMessage(new LiteralText("Wand Bound to " + stackInHand), false);
@@ -91,6 +99,7 @@ public class BetterBuilding implements ModInitializer {
                   })
                )
             );
+            System.out.println("(Command registration complete.)");
         });
 
 
