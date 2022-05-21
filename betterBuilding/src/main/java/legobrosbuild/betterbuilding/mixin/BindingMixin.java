@@ -29,8 +29,6 @@ import java.util.HashMap;
 
 @Mixin(Item.class)
 public abstract class BindingMixin {
-    final WoodWand woodWand = BetterBuilding.WOOD_WAND;
-    final MinecraftClient client = MinecraftClient.getInstance();
 
     @Inject(at = @At("HEAD"), method = "use", cancellable = true)
     private void init(World world, PlayerEntity player, Hand hand, CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {

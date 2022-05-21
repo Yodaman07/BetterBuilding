@@ -6,12 +6,15 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.datafixer.fix.StriderGravityFix;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.command.CommandOutput;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
@@ -28,8 +31,9 @@ public class BetterBuilding implements ModInitializer {
     public static final Identifier SET_WOOD_ID = new Identifier("betterbuilding", "setwood");
     public static final Identifier GET_WOOD_ID = new Identifier("betterbuilding", "getwood");
     public static final Identifier USE_DIAGONALS_ID = new Identifier("betterbuilding", "usediagonals");
+    public static final Identifier BIND_WAND_ID = new Identifier("betterbuilding", "bindwand");
 
-    public static String test = "test text";
+    public static HashMap<UUID, Identifier> boundWand = new HashMap<>();
     @Override
     public void onInitialize() {
         Registry.register(Registry.ITEM, new Identifier("betterbuilding", "wood_wand"), WOOD_WAND);
@@ -77,7 +81,9 @@ public class BetterBuilding implements ModInitializer {
 
                             System.out.println("Saving " + bound);
 
-                            DetectBoundWand.save(bound); //Somehow run the function.
+                            PacketByteBuf buf = PacketByteBufs.create();
+                            buf.writeIdentifier(bound);
+                            ServerPlayNetworking.send(source.getPlayer(), BIND_WAND_ID, buf);
 
                             source.getPlayer().sendMessage(new LiteralText("Wand Bound to " + stackInHand), false);
 
