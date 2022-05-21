@@ -14,20 +14,27 @@ import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.option.StickyKeyBinding;
+import net.minecraft.item.Item;
+import net.minecraft.item.Items;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.Registry;
 import org.lwjgl.glfw.GLFW;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static legobrosbuild.betterbuilding.BetterBuilding.GET_WOOD_ID;
+import static legobrosbuild.betterbuilding.BetterBuilding.boundWand;
 import static legobrosbuild.betterbuilding.WoodWand.useDiagonals;
 
 
@@ -37,11 +44,11 @@ public class BetterBuildingClient implements ClientModInitializer {
 
     public boolean locked = false;
     public int currentWoodId = 0;
-    void saveSettings(boolean useDiagonals, boolean isLocked, int woodNum, String boundWand){
+    void saveSettings(boolean useDiagonals, boolean isLocked, int woodNum, Identifier boundWand){
 
             try{
                 FileWriter config = new FileWriter("config.txt"); //Saved in "/run/config.txt"
-                config.write("useDiagonals = " + useDiagonals + "\nisLocked = " + isLocked + "\nwoodNum = " + woodNum + "\nboundWand = " + boundWand);
+                config.write("useDiagonals = " + useDiagonals + "\nisLocked = " + isLocked + "\nwoodNum = " + woodNum + "\nboundWand = " + boundWand + "\n");
                 config.close();
                 System.out.println("Config file successfully closed");
 
@@ -105,11 +112,19 @@ public class BetterBuildingClient implements ClientModInitializer {
             WoodWand.useDiagonalsHash.putIfAbsent(MinecraftClient.getInstance().player.getUuid(), WoodWand.useDiagonals); //Prevents an error as at this stage, the code in BetterBuilding hasnt run putting a value in for an empty hashmap
             locked = Boolean.parseBoolean(matchList.get(1));
             currentWoodId = Integer.parseInt(matchList.get(2));
+            Identifier boundWand = Identifier.tryParse(matchList.get(3));
 
             System.out.println("Config file successfully opened");
 
-            // Send the lock status to the server
+
+            // Send the bound wand to the server
             PacketByteBuf buf = PacketByteBufs.create();
+            buf.writeIdentifier(boundWand);
+            ClientPlayNetworking.send(BetterBuilding.BOUND_WAND_ID, buf);
+            System.out.println("Sent packet");
+
+            // Send the lock status to the server
+            buf = PacketByteBufs.create();
             buf.writeBoolean(locked);
             ClientPlayNetworking.send(BetterBuilding.LOCK_WAND_ID, buf);
 
@@ -129,7 +144,7 @@ public class BetterBuildingClient implements ClientModInitializer {
         ClientPlayNetworking.registerGlobalReceiver(GET_WOOD_ID, (client, handler, buf, responseSender) -> currentWoodId = buf.readInt());  // recv wood id from server
 
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
-            saveSettings(WoodWand.useDiagonals, locked, currentWoodId, "NA");
+            saveSettings(WoodWand.useDiagonals, locked, currentWoodId, boundWand.get(client.player.getUuid()) ); //<-- Default setting
         });
 
     }

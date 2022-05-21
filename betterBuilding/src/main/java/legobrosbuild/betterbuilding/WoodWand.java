@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -15,6 +16,7 @@ import net.minecraft.tag.BlockTags;
 import net.minecraft.tag.TagKey;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
@@ -23,7 +25,9 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.util.math.BlockPos;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -107,7 +111,7 @@ public class WoodWand extends Item {
 
         }
     }
-    int chainSwap(World world, BlockPos target, BlockState result, boolean useDiagonals) {
+    public static int chainSwap(World world, BlockPos target, BlockState result, boolean useDiagonals) {
         BlockState match = world.getBlockState(target);
         ArrayList<BlockPos> used = new ArrayList<>();  // Blocks we've already changed. Don't change them again.
         ArrayList<BlockPos> next = new ArrayList<>();  // Blocks we need to check next time.
@@ -216,6 +220,9 @@ public class WoodWand extends Item {
         }
 
         return TypedActionResult.success(playerEntity.getStackInHand(hand));
+    }
+    public void appendTooltip(ItemStack itemStack, World world, List<Text> tooltip, TooltipContext tooltipContext){
+        tooltip.add(new LiteralText("Bound Wand Default").formatted(Formatting.GOLD));
     }
 
 }

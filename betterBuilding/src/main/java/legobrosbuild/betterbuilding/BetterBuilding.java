@@ -1,24 +1,26 @@
 package legobrosbuild.betterbuilding;
 
 
-import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.datafixer.fix.StriderGravityFix;
+import net.minecraft.client.item.TooltipContext;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.server.command.CommandOutput;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.world.World;
+
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 
@@ -31,7 +33,7 @@ public class BetterBuilding implements ModInitializer {
     public static final Identifier SET_WOOD_ID = new Identifier("betterbuilding", "setwood");
     public static final Identifier GET_WOOD_ID = new Identifier("betterbuilding", "getwood");
     public static final Identifier USE_DIAGONALS_ID = new Identifier("betterbuilding", "usediagonals");
-    public static final Identifier BIND_WAND_ID = new Identifier("betterbuilding", "bindwand");
+    public static final Identifier BOUND_WAND_ID = new Identifier("betterbuilding", "boundwand");
 
     public static HashMap<UUID, Identifier> boundWand = new HashMap<>();
     @Override
@@ -70,17 +72,31 @@ public class BetterBuilding implements ModInitializer {
             }
         });
 
+        ServerPlayNetworking.registerGlobalReceiver(BOUND_WAND_ID, (server, player, handler, buf, responseSender) -> {
+            Identifier savedBoundWand = buf.readIdentifier();
+            System.out.println("Received the packet");
+
+            if (boundWand.containsKey(player.getUuid())) {
+                boundWand.replace(player.getUuid(), savedBoundWand);
+            } else {
+                boundWand.put(player.getUuid(), savedBoundWand);
+            }
+        });
+
         CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) ->  { //Registers the command
             dispatcher.register(literal("wand") //Base Level Command
                     .then(literal("bind") //Sub Command
                         .executes(context -> {
+
+
+
                             final ServerCommandSource source = context.getSource();
 
                             ItemStack stackInHand = source.getPlayer().getStackInHand(source.getPlayer().getActiveHand());
                             Identifier bound = Registry.ITEM.getId(stackInHand.getItem());
 
                             System.out.println("Saving " + bound);
-                            System.out.println("Client? " + (context.getSource().getWorld().isClient?"Ye":"No"));
+                            System.out.println("Client? " + (source.getWorld().isClient?"Ye":"No"));
 
                             PacketByteBuf buf = PacketByteBufs.create();
                             buf.writeIdentifier(bound);
@@ -91,7 +107,6 @@ public class BetterBuilding implements ModInitializer {
                             } else {
                                 boundWand.put(source.getPlayer().getUuid(), bound);
                             }
-                            ServerPlayNetworking.send(source.getPlayer(), BIND_WAND_ID, buf);
 
                             source.getPlayer().sendMessage(new LiteralText("Wand Bound to " + stackInHand), false);
 
@@ -101,8 +116,7 @@ public class BetterBuilding implements ModInitializer {
             );
             System.out.println("(Command registration complete.)");
         });
-
-
-
     }
+
+
 }
