@@ -121,7 +121,6 @@ public class BetterBuildingClient implements ClientModInitializer {
             PacketByteBuf buf = PacketByteBufs.create();
             buf.writeIdentifier(boundWand);
             ClientPlayNetworking.send(BetterBuilding.BOUND_WAND_ID, buf);
-            System.out.println("Sent packet");
 
             // Send the lock status to the server
             buf = PacketByteBufs.create();
@@ -144,7 +143,7 @@ public class BetterBuildingClient implements ClientModInitializer {
         ClientPlayNetworking.registerGlobalReceiver(GET_WOOD_ID, (client, handler, buf, responseSender) -> currentWoodId = buf.readInt());  // recv wood id from server
 
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
-            saveSettings(WoodWand.useDiagonals, locked, currentWoodId, boundWand.get(client.player.getUuid()) ); //<-- Default setting
+            saveSettings(WoodWand.useDiagonals, locked, currentWoodId, boundWand.get(client.player.getUuid()) );
         });
 
     }

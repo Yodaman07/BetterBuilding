@@ -9,12 +9,14 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
@@ -74,7 +76,6 @@ public class BetterBuilding implements ModInitializer {
 
         ServerPlayNetworking.registerGlobalReceiver(BOUND_WAND_ID, (server, player, handler, buf, responseSender) -> {
             Identifier savedBoundWand = buf.readIdentifier();
-            System.out.println("Received the packet");
 
             if (boundWand.containsKey(player.getUuid())) {
                 boundWand.replace(player.getUuid(), savedBoundWand);
@@ -87,32 +88,37 @@ public class BetterBuilding implements ModInitializer {
             dispatcher.register(literal("wand") //Base Level Command
                     .then(literal("bind") //Sub Command
                         .executes(context -> {
-
-
-
                             final ServerCommandSource source = context.getSource();
+                            Hand hand = source.getPlayer().getActiveHand();
+                            if (source.getPlayer().getStackInHand(hand).getItem() != Items.AIR) {
+                                ItemStack stackInHand = source.getPlayer().getStackInHand(hand);
+                                Identifier bound = Registry.ITEM.getId(stackInHand.getItem());
 
-                            ItemStack stackInHand = source.getPlayer().getStackInHand(source.getPlayer().getActiveHand());
-                            Identifier bound = Registry.ITEM.getId(stackInHand.getItem());
+                                System.out.println("Saving " + bound);
+                                System.out.println("Client? " + (source.getWorld().isClient ? "Ye" : "No"));
 
-                            System.out.println("Saving " + bound);
-                            System.out.println("Client? " + (source.getWorld().isClient?"Ye":"No"));
+                                // bind
+                                if (boundWand.containsKey(source.getPlayer().getUuid())) {
+                                    boundWand.replace(source.getPlayer().getUuid(), bound);
+                                } else {
+                                    boundWand.put(source.getPlayer().getUuid(), bound);
+                                }
 
-                            PacketByteBuf buf = PacketByteBufs.create();
-                            buf.writeIdentifier(bound);
-
-                            // bind
-                            if (boundWand.containsKey(source.getPlayer().getUuid())) {
-                                boundWand.replace(source.getPlayer().getUuid(), bound);
-                            } else {
-                                boundWand.put(source.getPlayer().getUuid(), bound);
+                                source.getPlayer().sendMessage(new LiteralText("Wand Bound to " + stackInHand.getItem()), false);
+                            }else{
+                                source.getPlayer().sendMessage(new LiteralText("Air can't be saved"), false);
                             }
-
-                            source.getPlayer().sendMessage(new LiteralText("Wand Bound to " + stackInHand), false);
-
                             return 1;
-                  })
-               )
+                        })
+
+                     ).then(literal("give").executes(context -> {
+                         final ServerCommandSource source = context.getSource();
+                         Identifier savedWand = boundWand.get(source.getPlayer().getUuid());
+                         source.getPlayer().giveItemStack(Registry.ITEM.get(savedWand).getDefaultStack());
+
+                         source.getPlayer().sendMessage(new LiteralText("Gave " + Registry.ITEM.get(savedWand).getDefaultStack() + " to " + source.getPlayer().getEntityName()), false);
+                         return 1;
+                     }))
             );
             System.out.println("(Command registration complete.)");
         });
