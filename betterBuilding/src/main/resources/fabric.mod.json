@@ -9,7 +9,7 @@
   ],
   "contact": {},
   "license": "MIT",
-  "icon": "assets/betterbuilding/icon.png",
+  "icon": "assets/betterbuilding/textures/item/wood_wand.png",
   "environment": "*",
   "entrypoints": {
     "client": [

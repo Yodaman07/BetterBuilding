@@ -2,7 +2,6 @@ package legobrosbuild.betterbuilding;
 
 
 
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.MinecraftClient;
@@ -17,11 +16,15 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
+
+import java.util.Arrays;
+import java.util.List;
+
 import static legobrosbuild.betterbuilding.WoodWand.useDiagonals;
 
 
 public class BBSettingsScreen extends GameOptionsScreen {
-
+    int next = 0;
 
     public BBSettingsScreen(Screen parent, GameOptions options) {
         super(parent, options, new TranslatableText("options.bbSettings.title"));
@@ -31,8 +34,8 @@ public class BBSettingsScreen extends GameOptionsScreen {
         //Code for the BetterBuilding settings screen goes here
 
         super.renderBackground(matrices);
-        BBSettingsScreen.drawCenteredText(new MatrixStack(), super.textRenderer, "UseDiagonals",this.width/2-80, this.height/6, 0xffffff);
-        BBSettingsScreen.drawCenteredText(new MatrixStack(), super.textRenderer, "OtherSetting",this.width/2+80, this.height/6, 0xffffff);
+        BBSettingsScreen.drawCenteredText(new MatrixStack(), super.textRenderer, "Use Diagonals",this.width/2-80, this.height/6, 0xffffff);
+        BBSettingsScreen.drawCenteredText(new MatrixStack(), super.textRenderer, "Hud Position",this.width/2+80, this.height/6, 0xffffff);
 
 
         super.addDrawableChild(CyclingButtonWidget.onOffBuilder(new LiteralText(""), new LiteralText("")).build(this.width / 2 - 155, this.height / 6 - 12 + 24, 150, 20, new LiteralText("ERROR"), (button, value) -> {
@@ -51,12 +54,32 @@ public class BBSettingsScreen extends GameOptionsScreen {
 
         })).setMessage(new LiteralText(useDiagonals ? "True" : "False").formatted(useDiagonals? Formatting.GREEN: Formatting.RED));
 
-        super.addDrawableChild(new ButtonWidget(this.width / 2 + 5, this.height / 6 -12 + 24, 150, 20, new TranslatableText("bbSettings.otherOption"), button1 -> System.out.println("Toggled")));
+        BlockHudPos();
 
         super.addDrawableChild(new ButtonWidget(this.width /2 - 100,this.height / 6 - 12 + 54, 200, 20, ScreenTexts.DONE, button -> this.client.setScreen(this.parent)));
+
 //        super.renderBackgroundTexture(10); //Background Toggle
         super.render(matrices, mouseX, mouseY, delta);
 
+    }
+
+
+
+    public void BlockHudPos(){
+        List<BlockCyclingHudPos> posList = Arrays.stream(BlockCyclingHudPos.values()).toList();
+        BlockCyclingHudPos pos = posList.get(next);
+
+
+        super.addDrawableChild(new ButtonWidget(this.width / 2 + 5, this.height / 6 - 12 + 24, 150, 20, new LiteralText(pos.name()), button -> {
+            BlockCyclingHudPos result = pos.cycle(pos.ordinal());
+            next = result.ordinal();
+
+            BetterBuilding.optW = result.getW();
+            BetterBuilding.optH = result.getH();
+
+
+            super.clearChildren();
+        }));
     }
 
 }

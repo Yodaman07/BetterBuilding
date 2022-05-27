@@ -1,11 +1,16 @@
 package legobrosbuild.betterbuilding;
 
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.block.Block;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
@@ -21,9 +26,13 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 
+import java.awt.*;
+import java.lang.management.MemoryNotificationInfo;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 import static net.minecraft.server.command.CommandManager.literal;
@@ -38,6 +47,8 @@ public class BetterBuilding implements ModInitializer {
     public static final Identifier BOUND_WAND_ID = new Identifier("betterbuilding", "boundwand");
 
     public static HashMap<UUID, Identifier> boundWand = new HashMap<>();
+    public static int optH;
+    public static int optW;
     @Override
     public void onInitialize() {
         Registry.register(Registry.ITEM, new Identifier("betterbuilding", "wood_wand"), WOOD_WAND);
@@ -94,7 +105,6 @@ public class BetterBuilding implements ModInitializer {
                                 ItemStack stackInHand = source.getPlayer().getStackInHand(hand);
                                 Identifier bound = Registry.ITEM.getId(stackInHand.getItem());
 
-                                System.out.println("Saving " + bound);
                                 System.out.println("Client? " + (source.getWorld().isClient ? "Ye" : "No"));
 
                                 // bind
@@ -122,7 +132,31 @@ public class BetterBuilding implements ModInitializer {
             );
             System.out.println("(Command registration complete.)");
         });
+        HudRenderCallback.EVENT.register((matrices, tickDelta) -> {
+            MinecraftClient client = MinecraftClient.getInstance();
+            int h = client.getWindow().getHeight();
+            int w = client.getWindow().getWidth();
+
+            int i = 30; //Adapt to chat hud setting
+
+            int blockCount = 0;
+            for (Block block: WoodWand.plankList) {
+
+                if (WoodWand.plankList.get(WoodWand.woodNum.get(client.player.getUuid())) == block && blockCount <= 7){
+                    RenderSystem.setShaderTexture(0, new Identifier("betterbuilding", "textures/gui/highlight.png"));
+                    DrawableHelper.drawTexture(matrices, w/4-(optW), h/2-(i+optH), 0, 0, 32, 32, 32, 32);
+                }
+
+                Pattern pattern = Pattern.compile(":(.*)_");
+                Matcher matcher = pattern.matcher(Registry.BLOCK.getId(block).toString());
+                if (matcher.find() && blockCount <= 7){
+                    RenderSystem.setShaderTexture(0, new Identifier("betterbuilding", "textures/gui/" + matcher.group(1) + ".png"));
+
+                    DrawableHelper.drawTexture(matrices, w/4-(optW), h/2-(i+optH), 0, 0, 32, 32, 32, 32);
+                    i+=26;
+                    blockCount++;
+                }
+            }
+        });
     }
-
-
 }

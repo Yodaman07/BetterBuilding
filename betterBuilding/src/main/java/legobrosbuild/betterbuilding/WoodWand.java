@@ -50,15 +50,18 @@ public class WoodWand extends Item {
     public WoodWand(Settings settings) {
         super(settings);
     }
-
     public static HashMap<UUID, Integer> woodNum = new HashMap<>();
     public static final long MAX_CHECKS = 2048;
-
     public static HashMap <UUID, Boolean> lockedState = new HashMap<>();
     public static HashMap <UUID, Boolean> useDiagonalsHash = new HashMap<>();
-
-
     public static boolean useDiagonals = true;
+    // plankList made obsolete by tag system + registry
+    public static List<Block> logList = List.of(Blocks.CRIMSON_STEM, Blocks.WARPED_STEM, Blocks.DARK_OAK_LOG, Blocks.ACACIA_LOG,
+            Blocks.JUNGLE_LOG, Blocks.OAK_LOG, Blocks.BIRCH_LOG, Blocks.SPRUCE_LOG, Blocks.CRIMSON_STEM);
+
+    public static List<Block> plankList = List.of(Blocks.CRIMSON_PLANKS, Blocks.WARPED_PLANKS, Blocks.DARK_OAK_PLANKS, Blocks.ACACIA_PLANKS,
+            Blocks.JUNGLE_PLANKS, Blocks.OAK_PLANKS, Blocks.BIRCH_PLANKS, Blocks.SPRUCE_PLANKS, Blocks.CRIMSON_PLANKS);
+
 
     void setBlock(List<Block> list, PlayerEntity playerEntity, BlockState blockState, World world, BlockPos pos, TagKey<Block> tag) {
         if (blockState.isIn(tag)) { // Makes sure the block is a plank: new, modernized version
@@ -189,12 +192,7 @@ public class WoodWand extends Item {
 
         HitResult hit = playerEntity.raycast(5, 0, false);
 
-        // plankList made obsolete by tag system + registry
-        List<Block> logList = List.of(Blocks.CRIMSON_STEM, Blocks.WARPED_STEM, Blocks.DARK_OAK_LOG, Blocks.ACACIA_LOG,
-                Blocks.JUNGLE_LOG, Blocks.OAK_LOG, Blocks.BIRCH_LOG, Blocks.SPRUCE_LOG, Blocks.CRIMSON_STEM);
 
-        List<Block> plankList = List.of(Blocks.CRIMSON_PLANKS, Blocks.WARPED_PLANKS, Blocks.DARK_OAK_PLANKS, Blocks.ACACIA_PLANKS,
-                Blocks.JUNGLE_PLANKS, Blocks.OAK_PLANKS, Blocks.BIRCH_PLANKS, Blocks.SPRUCE_PLANKS, Blocks.CRIMSON_PLANKS);
 
         if (playerEntity.isCreative()){
             switch (hit.getType()) {
