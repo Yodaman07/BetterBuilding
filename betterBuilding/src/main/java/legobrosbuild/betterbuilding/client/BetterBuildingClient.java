@@ -1,7 +1,9 @@
 package legobrosbuild.betterbuilding.client;
 
 
+import legobrosbuild.betterbuilding.BBSettingsScreen;
 import legobrosbuild.betterbuilding.BetterBuilding;
+import legobrosbuild.betterbuilding.BlockCyclingHudPos;
 import legobrosbuild.betterbuilding.WoodWand;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
@@ -42,13 +44,17 @@ import static legobrosbuild.betterbuilding.WoodWand.useDiagonals;
 public class BetterBuildingClient implements ClientModInitializer {
 
 
-    public boolean locked = false;
-    public int currentWoodId = 0;
-    void saveSettings(boolean useDiagonals, boolean isLocked, int woodNum, Identifier boundWand){
+    public static boolean locked = false;
+    public static int currentWoodId = 0;
+    public static void saveSettings(boolean useDiagonals, boolean isLocked, int woodNum, Identifier boundWand, BlockCyclingHudPos guiPos){
 
             try{
                 FileWriter config = new FileWriter("config.txt"); //Saved in "/run/config.txt"
-                config.write("useDiagonals = " + useDiagonals + "\nisLocked = " + isLocked + "\nwoodNum = " + woodNum + "\nboundWand = " + boundWand + "\n");
+                config.write("useDiagonals = " + useDiagonals +
+                        "\nisLocked = " + isLocked +
+                        "\nwoodNum = " + woodNum +
+                        "\nboundWand = " + boundWand +
+                        "\nguiPosition = " + guiPos);
                 config.close();
                 System.out.println("Config file successfully closed");
 
@@ -58,7 +64,7 @@ public class BetterBuildingClient implements ClientModInitializer {
             }
     }
 
-    ArrayList<String> loadSettings(){
+    public static ArrayList<String> loadSettings(){
         try{
             File config = new File("config.txt");
             Scanner scanner = new Scanner(config);
@@ -105,14 +111,17 @@ public class BetterBuildingClient implements ClientModInitializer {
             }
         });
 
-        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> { //Sends the packet when you join the world
-            ArrayList<String> matchList = loadSettings();
 
+        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> { //Sends the packet when you join the world
+
+            ArrayList<String> matchList = loadSettings();
             WoodWand.useDiagonals = Boolean.parseBoolean(matchList.get(0));
-            WoodWand.useDiagonalsHash.putIfAbsent(MinecraftClient.getInstance().player.getUuid(), WoodWand.useDiagonals); //Prevents an error as at this stage, the code in BetterBuilding hasnt run putting a value in for an empty hashmap
+            WoodWand.useDiagonalsHash.putIfAbsent(MinecraftClient.getInstance().player.getUuid(), WoodWand.useDiagonals); //Prevents an error as at this stage, the code in BetterBuilding hasn't run putting a value in for an empty hashmap
             locked = Boolean.parseBoolean(matchList.get(1));
             currentWoodId = Integer.parseInt(matchList.get(2));
             Identifier boundWand = Identifier.tryParse(matchList.get(3));
+
+            BBSettingsScreen.pos = BlockCyclingHudPos.valueOf(matchList.get(4)); //Sets gui pos
 
             System.out.println("Config file successfully opened");
 
@@ -142,9 +151,7 @@ public class BetterBuildingClient implements ClientModInitializer {
 
         ClientPlayNetworking.registerGlobalReceiver(GET_WOOD_ID, (client, handler, buf, responseSender) -> currentWoodId = buf.readInt());  // recv wood id from server
 
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
-            saveSettings(WoodWand.useDiagonals, locked, currentWoodId, boundWand.get(client.player.getUuid()) );
-        });
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> saveSettings(WoodWand.useDiagonals, locked, currentWoodId, boundWand.get(client.player.getUuid()), BBSettingsScreen.pos));
 
     }
 }

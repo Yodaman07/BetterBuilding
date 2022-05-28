@@ -3,6 +3,7 @@ package legobrosbuild.betterbuilding;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
@@ -132,11 +133,18 @@ public class BetterBuilding implements ModInitializer {
             );
             System.out.println("(Command registration complete.)");
         });
+
+
+
+        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
+            optW = BBSettingsScreen.pos.getW();
+            optH = BBSettingsScreen.pos.getH();
+        });
+
         HudRenderCallback.EVENT.register((matrices, tickDelta) -> {
             MinecraftClient client = MinecraftClient.getInstance();
             int h = client.getWindow().getHeight();
             int w = client.getWindow().getWidth();
-
             int i = 30; //Adapt to chat hud setting
 
             int blockCount = 0;

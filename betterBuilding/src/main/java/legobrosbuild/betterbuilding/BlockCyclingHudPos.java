@@ -8,10 +8,10 @@ import java.util.List;
 
 public enum BlockCyclingHudPos {
 
-    BOTTOM_RIGHT( (MinecraftClient.getInstance().getWindow().getWidth()/2)-640, 0),
-    BOTTOM_LEFT(-600,0),
-    TOP_RIGHT(BOTTOM_RIGHT.w, (MinecraftClient.getInstance().getWindow().getHeight()/3)+30 ),
-    TOP_LEFT(-600, TOP_RIGHT.h);
+    BOTTOM_LEFT( (MinecraftClient.getInstance().getWindow().getWidth()/2)-640, 0),
+    BOTTOM_RIGHT(-600,0),
+    TOP_LEFT(BOTTOM_LEFT.w, (MinecraftClient.getInstance().getWindow().getHeight()/3)+30 ),
+    TOP_RIGHT(-600, TOP_LEFT.h);
     private final int w;
     private final int h;
     BlockCyclingHudPos(int w, int h) {
@@ -28,12 +28,10 @@ public enum BlockCyclingHudPos {
         for (BlockCyclingHudPos pos:BlockCyclingHudPos.values()) {
             if (pos.ordinal() == current && current != 3) { //Checking if current pos is the same as the pos in the block cycle
                 //Return the index of the next pos
-                posList.get(current + 1);
                 return posList.get(current + 1);
             }
             else if (current>=3){
                 current = 0;
-                posList.get(current);
                 return posList.get(current);
             }
         }

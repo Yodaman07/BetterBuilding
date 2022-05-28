@@ -2,6 +2,7 @@ package legobrosbuild.betterbuilding;
 
 
 
+import legobrosbuild.betterbuilding.client.BetterBuildingClient;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.MinecraftClient;
@@ -16,15 +17,23 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+
+import static legobrosbuild.betterbuilding.BetterBuilding.boundWand;
 import static legobrosbuild.betterbuilding.WoodWand.useDiagonals;
 
 
 public class BBSettingsScreen extends GameOptionsScreen {
-    int next = 0;
+    public static ArrayList<String> matchList = BetterBuildingClient.loadSettings();
+
+    public static BlockCyclingHudPos pos = BlockCyclingHudPos.valueOf(matchList.get(4));
+
+    int next = pos.ordinal();
 
     public BBSettingsScreen(Screen parent, GameOptions options) {
         super(parent, options, new TranslatableText("options.bbSettings.title"));
@@ -67,18 +76,22 @@ public class BBSettingsScreen extends GameOptionsScreen {
 
     public void BlockHudPos(){
         List<BlockCyclingHudPos> posList = Arrays.stream(BlockCyclingHudPos.values()).toList();
-        BlockCyclingHudPos pos = posList.get(next);
+        pos = posList.get(next);
 
 
         super.addDrawableChild(new ButtonWidget(this.width / 2 + 5, this.height / 6 - 12 + 24, 150, 20, new LiteralText(pos.name()), button -> {
+
             BlockCyclingHudPos result = pos.cycle(pos.ordinal());
             next = result.ordinal();
+
+            BetterBuildingClient.saveSettings(WoodWand.useDiagonals, BetterBuildingClient.locked, BetterBuildingClient.currentWoodId, Identifier.tryParse(matchList.get(3)), result);
 
             BetterBuilding.optW = result.getW();
             BetterBuilding.optH = result.getH();
 
-
             super.clearChildren();
+
+
         }));
     }
 
