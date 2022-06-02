@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.List;
 
 
-import static legobrosbuild.betterbuilding.BetterBuilding.boundWand;
 import static legobrosbuild.betterbuilding.WoodWand.useDiagonals;
 
 
