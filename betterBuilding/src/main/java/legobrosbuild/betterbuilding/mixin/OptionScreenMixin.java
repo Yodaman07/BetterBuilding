@@ -1,7 +1,7 @@
 package legobrosbuild.betterbuilding.mixin;
 
 
-import legobrosbuild.betterbuilding.BBSettingsScreen;
+import legobrosbuild.betterbuilding.client.BBSettingsScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.option.OptionsScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;

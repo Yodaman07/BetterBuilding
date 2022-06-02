@@ -1,8 +1,8 @@
-package legobrosbuild.betterbuilding;
+package legobrosbuild.betterbuilding.hud;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import legobrosbuild.betterbuilding.WoodWand;
+import legobrosbuild.betterbuilding.client.BBSettingsScreen;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;

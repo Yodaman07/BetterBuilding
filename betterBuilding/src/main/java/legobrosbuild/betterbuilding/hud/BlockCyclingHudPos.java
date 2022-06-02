@@ -1,4 +1,4 @@
-package legobrosbuild.betterbuilding;
+package legobrosbuild.betterbuilding.hud;
 
 import net.minecraft.client.MinecraftClient;
 

@@ -1,10 +1,9 @@
 package legobrosbuild.betterbuilding.client;
 
 
-import legobrosbuild.betterbuilding.BBSettingsScreen;
-import legobrosbuild.betterbuilding.BetterBuilding;
-import legobrosbuild.betterbuilding.BlockCyclingHudPos;
-import legobrosbuild.betterbuilding.WoodWand;
+import legobrosbuild.betterbuilding.*;
+import legobrosbuild.betterbuilding.hud.BlockCyclingHudPos;
+import legobrosbuild.betterbuilding.hud.DisplayHud;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -16,8 +15,6 @@ import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.option.StickyKeyBinding;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
@@ -28,15 +25,15 @@ import org.lwjgl.glfw.GLFW;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Scanner;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static legobrosbuild.betterbuilding.BetterBuilding.GET_WOOD_ID;
-import static legobrosbuild.betterbuilding.BetterBuilding.boundWand;
+import static legobrosbuild.betterbuilding.BetterBuilding.*;
 import static legobrosbuild.betterbuilding.WoodWand.useDiagonals;
 
 
@@ -46,27 +43,38 @@ public class BetterBuildingClient implements ClientModInitializer {
 
     public static boolean locked = false;
     public static int currentWoodId = 0;
+    public static Identifier bound = null;
     public static void saveSettings(boolean useDiagonals, boolean isLocked, int woodNum, Identifier boundWand, BlockCyclingHudPos guiPos){
 
             try{
-                FileWriter config = new FileWriter("config.txt"); //Saved in "/run/config.txt"
+                FileWriter config = new FileWriter("config/BetterBuilding/config.txt"); //Saved in "/run/config.txt"
                 config.write("useDiagonals = " + useDiagonals +
                         "\nisLocked = " + isLocked +
                         "\nwoodNum = " + woodNum +
                         "\nboundWand = " + boundWand +
                         "\nguiPosition = " + guiPos);
                 config.close();
-                System.out.println("Config file successfully closed");
+                System.out.println("Config file successfully saved");
 
             } catch (IOException e) {
                 System.out.println("An error has occurred");
                 throw new RuntimeException(e);
             }
     }
-
     public static ArrayList<String> loadSettings(){
         try{
-            File config = new File("config.txt");
+
+            Path path = Paths.get("config/BetterBuilding");
+            Files.createDirectories(path);
+
+            File config = new File("config/BetterBuilding/config.txt");
+
+            if (!config.exists()){
+                Identifier id = Registry.ITEM.getId(WOOD_WAND);
+                System.out.println("Generating Config File");
+                saveSettings(true, false, 0, id, BlockCyclingHudPos.BOTTOM_LEFT); //Default Selection
+            }
+
             Scanner scanner = new Scanner(config);
             Pattern settingsPatter = Pattern.compile("= (.*)");
             ArrayList<String> matchList = new ArrayList<>();
@@ -88,14 +96,13 @@ public class BetterBuildingClient implements ClientModInitializer {
         }
 
     }
-
     @Override
     public void onInitializeClient() {
 
         KeyBinding keyBinding = KeyBindingHelper.registerKeyBinding(new StickyKeyBinding(
                 "legobrosbuild.betterbuilding.lock",
                 GLFW.GLFW_KEY_B,
-                "category.legorbrosbuild.locking",
+                "category.legorbrosbuild.keybinds",
                 () -> true));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
@@ -129,7 +136,7 @@ public class BetterBuildingClient implements ClientModInitializer {
             // Send the bound wand to the server
             PacketByteBuf buf = PacketByteBufs.create();
             buf.writeIdentifier(boundWand);
-            ClientPlayNetworking.send(BetterBuilding.BOUND_WAND_ID, buf);
+            ClientPlayNetworking.send(BetterBuilding.SET_BOUND_WAND_ID, buf);
 
             // Send the lock status to the server
             buf = PacketByteBufs.create();
@@ -146,12 +153,16 @@ public class BetterBuildingClient implements ClientModInitializer {
             buf.writeInt(currentWoodId);
             ClientPlayNetworking.send(BetterBuilding.SET_WOOD_ID, buf);
 
-
+            DisplayHud.renderHud();
         });
 
-        ClientPlayNetworking.registerGlobalReceiver(GET_WOOD_ID, (client, handler, buf, responseSender) -> currentWoodId = buf.readInt());  // recv wood id from server
 
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> saveSettings(WoodWand.useDiagonals, locked, currentWoodId, boundWand.get(client.player.getUuid()), BBSettingsScreen.pos));
+        ClientPlayNetworking.registerGlobalReceiver(GET_WOOD_ID, (client, handler, buf, responseSender) -> currentWoodId = buf.readInt());  // recv wood id from server
+        ClientPlayNetworking.registerGlobalReceiver(GET_BOUND_WAND_ID, (client, handler, buf, responseSender) -> bound = buf.readIdentifier());
+
+
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client1) -> saveSettings(WoodWand.useDiagonals, locked, currentWoodId, bound, BBSettingsScreen.pos));
+
 
     }
 }

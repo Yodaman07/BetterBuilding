@@ -1,52 +1,36 @@
 package legobrosbuild.betterbuilding;
 
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.block.Block;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawableHelper;
-import net.minecraft.client.item.TooltipContext;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.LiteralText;
-import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.world.World;
 
-import java.awt.*;
-import java.lang.management.MemoryNotificationInfo;
 import java.util.HashMap;
-import java.util.List;
 import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 
 import static net.minecraft.server.command.CommandManager.literal;
 
 public class BetterBuilding implements ModInitializer {
-    public static final WoodWand WOOD_WAND = new WoodWand(new FabricItemSettings().group(ItemGroup.MISC));
+    public static final WoodWand WOOD_WAND = new WoodWand(new FabricItemSettings().group(ItemGroup.MISC).maxCount(1));
 
     public static final Identifier LOCK_WAND_ID = new Identifier("betterbuilding", "lockwand");
     public static final Identifier SET_WOOD_ID = new Identifier("betterbuilding", "setwood");
     public static final Identifier GET_WOOD_ID = new Identifier("betterbuilding", "getwood");
     public static final Identifier USE_DIAGONALS_ID = new Identifier("betterbuilding", "usediagonals");
-    public static final Identifier BOUND_WAND_ID = new Identifier("betterbuilding", "boundwand");
-
+    public static final Identifier SET_BOUND_WAND_ID = new Identifier("betterbuilding", "setboundwand");
+    public static final Identifier GET_BOUND_WAND_ID = new Identifier("betterbuilding", "getboundwand");
     public static HashMap<UUID, Identifier> boundWand = new HashMap<>();
     public static int optH;
     public static int optW;
@@ -86,7 +70,7 @@ public class BetterBuilding implements ModInitializer {
             }
         });
 
-        ServerPlayNetworking.registerGlobalReceiver(BOUND_WAND_ID, (server, player, handler, buf, responseSender) -> {
+        ServerPlayNetworking.registerGlobalReceiver(SET_BOUND_WAND_ID, (server, player, handler, buf, responseSender) -> {
             Identifier savedBoundWand = buf.readIdentifier();
 
             if (boundWand.containsKey(player.getUuid())) {
@@ -95,6 +79,7 @@ public class BetterBuilding implements ModInitializer {
                 boundWand.put(player.getUuid(), savedBoundWand);
             }
         });
+
 
         CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) ->  { //Registers the command
             dispatcher.register(literal("wand") //Base Level Command
@@ -106,7 +91,7 @@ public class BetterBuilding implements ModInitializer {
                                 ItemStack stackInHand = source.getPlayer().getStackInHand(hand);
                                 Identifier bound = Registry.ITEM.getId(stackInHand.getItem());
 
-                                System.out.println("Client? " + (source.getWorld().isClient ? "Ye" : "No"));
+                                System.out.println("Client? " + (source.getWorld().isClient ? "Yes" : "No"));
 
                                 // bind
                                 if (boundWand.containsKey(source.getPlayer().getUuid())) {
@@ -114,6 +99,10 @@ public class BetterBuilding implements ModInitializer {
                                 } else {
                                     boundWand.put(source.getPlayer().getUuid(), bound);
                                 }
+
+                                PacketByteBuf buf = PacketByteBufs.create();
+                                buf.writeIdentifier(bound);
+                                ServerPlayNetworking.send(source.getPlayer(), GET_BOUND_WAND_ID, buf);
 
                                 source.getPlayer().sendMessage(new LiteralText("Wand Bound to " + stackInHand.getItem()), false);
                             }else{
@@ -134,37 +123,5 @@ public class BetterBuilding implements ModInitializer {
             System.out.println("(Command registration complete.)");
         });
 
-
-
-        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
-            optW = BBSettingsScreen.pos.getW();
-            optH = BBSettingsScreen.pos.getH();
-        });
-
-        HudRenderCallback.EVENT.register((matrices, tickDelta) -> {
-            MinecraftClient client = MinecraftClient.getInstance();
-            int h = client.getWindow().getHeight();
-            int w = client.getWindow().getWidth();
-            int i = 30; //Adapt to chat hud setting
-
-            int blockCount = 0;
-            for (Block block: WoodWand.plankList) {
-
-                if (WoodWand.plankList.get(WoodWand.woodNum.get(client.player.getUuid())) == block && blockCount <= 7){
-                    RenderSystem.setShaderTexture(0, new Identifier("betterbuilding", "textures/gui/highlight.png"));
-                    DrawableHelper.drawTexture(matrices, w/4-(optW), h/2-(i+optH), 0, 0, 32, 32, 32, 32);
-                }
-
-                Pattern pattern = Pattern.compile(":(.*)_");
-                Matcher matcher = pattern.matcher(Registry.BLOCK.getId(block).toString());
-                if (matcher.find() && blockCount <= 7){
-                    RenderSystem.setShaderTexture(0, new Identifier("betterbuilding", "textures/gui/" + matcher.group(1) + ".png"));
-
-                    DrawableHelper.drawTexture(matrices, w/4-(optW), h/2-(i+optH), 0, 0, 32, 32, 32, 32);
-                    i+=26;
-                    blockCount++;
-                }
-            }
-        });
     }
 }

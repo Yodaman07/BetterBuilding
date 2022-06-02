@@ -1,8 +1,10 @@
-package legobrosbuild.betterbuilding;
+package legobrosbuild.betterbuilding.client;
 
 
 
-import legobrosbuild.betterbuilding.client.BetterBuildingClient;
+import legobrosbuild.betterbuilding.BetterBuilding;
+import legobrosbuild.betterbuilding.hud.BlockCyclingHudPos;
+import legobrosbuild.betterbuilding.WoodWand;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.MinecraftClient;
@@ -35,7 +37,7 @@ public class BBSettingsScreen extends GameOptionsScreen {
     int next = pos.ordinal();
 
     public BBSettingsScreen(Screen parent, GameOptions options) {
-        super(parent, options, new TranslatableText("options.bbSettings.title"));
+        super(parent, options, new TranslatableText("options.BetterBuilding"));
     }
 
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {

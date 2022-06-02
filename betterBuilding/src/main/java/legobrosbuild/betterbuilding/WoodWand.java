@@ -16,7 +16,6 @@ import net.minecraft.tag.BlockTags;
 import net.minecraft.tag.TagKey;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
@@ -25,9 +24,8 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.util.math.BlockPos;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import javax.annotation.Nullable;
+
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -38,10 +36,6 @@ import static legobrosbuild.betterbuilding.BetterBuilding.GET_WOOD_ID;
 //TO ADD: GUI to sort wood order
 
 //TO ADD: Add a method for other wood types with a param of the list
-
-
-//TO ADD: Save the player settings, bound wand and selected block on close
-
 
 //Refactor code to methods
 
@@ -209,7 +203,6 @@ public class WoodWand extends Item {
                     // Update: use block tags instead of list. Helps with mod compatibility
                     setBlock(plankList, playerEntity,blockState,world,blockPos, BlockTags.PLANKS);
                     setBlock(logList, playerEntity,blockState,world,blockPos, BlockTags.LOGS); //Sync the plank and log type together
-
                     break;
             }
         }
@@ -220,7 +213,7 @@ public class WoodWand extends Item {
         return TypedActionResult.success(playerEntity.getStackInHand(hand));
     }
     public void appendTooltip(ItemStack itemStack, World world, List<Text> tooltip, TooltipContext tooltipContext){
-        tooltip.add(new LiteralText("Bound Wand Default").formatted(Formatting.GOLD));
+        tooltip.add(new LiteralText("Default Bound Wand").formatted(Formatting.GOLD));
     }
 
 }
