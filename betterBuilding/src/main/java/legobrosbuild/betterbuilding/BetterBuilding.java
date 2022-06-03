@@ -12,9 +12,12 @@ import net.minecraft.item.Items;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.LiteralText;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.UUID;
@@ -34,6 +37,8 @@ public class BetterBuilding implements ModInitializer {
     public static HashMap<UUID, Identifier> boundWand = new HashMap<>();
     public static int optH;
     public static int optW;
+
+    public static final Logger LOGGER = LoggerFactory.getLogger("modid");
     @Override
     public void onInitialize() {
         Registry.register(Registry.ITEM, new Identifier("betterbuilding", "wood_wand"), WOOD_WAND);
@@ -91,7 +96,7 @@ public class BetterBuilding implements ModInitializer {
                                 ItemStack stackInHand = source.getPlayer().getStackInHand(hand);
                                 Identifier bound = Registry.ITEM.getId(stackInHand.getItem());
 
-                                System.out.println("Client? " + (source.getWorld().isClient ? "Yes" : "No"));
+//                                System.out.println("Client? " + (source.getWorld().isClient ? "Yes" : "No"));
 
                                 // bind
                                 if (boundWand.containsKey(source.getPlayer().getUuid())) {
@@ -113,14 +118,19 @@ public class BetterBuilding implements ModInitializer {
 
                      ).then(literal("give").executes(context -> {
                          final ServerCommandSource source = context.getSource();
-                         Identifier savedWand = boundWand.get(source.getPlayer().getUuid());
-                         source.getPlayer().giveItemStack(Registry.ITEM.get(savedWand).getDefaultStack());
+                         if (source.getPlayer().isCreative()) {
+                             Identifier savedWand = boundWand.get(source.getPlayer().getUuid());
+                             source.getPlayer().giveItemStack(Registry.ITEM.get(savedWand).getDefaultStack());
 
-                         source.getPlayer().sendMessage(new LiteralText("Gave " + Registry.ITEM.get(savedWand).getDefaultStack() + " to " + source.getPlayer().getEntityName()), false);
+                             source.getPlayer().sendMessage(new LiteralText("Gave " + Registry.ITEM.get(savedWand).getDefaultStack() + " to " + source.getPlayer().getEntityName()), false);
+                         }
+                         else{
+                             source.getPlayer().sendMessage(new LiteralText("You need to be in creative mode to use this command").formatted(Formatting.RED), false);
+                         }
                          return 1;
                      }))
             );
-            System.out.println("(Command registration complete.)");
+            LOGGER.info("Command registration complete");
         });
 
     }

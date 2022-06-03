@@ -132,7 +132,6 @@ public class BetterBuildingClient implements ClientModInitializer {
 
             System.out.println("Config file successfully opened");
 
-
             // Send the bound wand to the server
             PacketByteBuf buf = PacketByteBufs.create();
             buf.writeIdentifier(boundWand);

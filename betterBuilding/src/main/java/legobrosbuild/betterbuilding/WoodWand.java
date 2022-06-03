@@ -50,15 +50,21 @@ public class WoodWand extends Item {
     public static HashMap <UUID, Boolean> useDiagonalsHash = new HashMap<>();
     public static boolean useDiagonals = true;
     // plankList made obsolete by tag system + registry
-    public static List<Block> logList = List.of(Blocks.CRIMSON_STEM, Blocks.WARPED_STEM, Blocks.DARK_OAK_LOG, Blocks.ACACIA_LOG,
-            Blocks.JUNGLE_LOG, Blocks.OAK_LOG, Blocks.BIRCH_LOG, Blocks.SPRUCE_LOG, Blocks.CRIMSON_STEM);
 
     public static List<Block> plankList = List.of(Blocks.CRIMSON_PLANKS, Blocks.WARPED_PLANKS, Blocks.DARK_OAK_PLANKS, Blocks.ACACIA_PLANKS,
             Blocks.JUNGLE_PLANKS, Blocks.OAK_PLANKS, Blocks.BIRCH_PLANKS, Blocks.SPRUCE_PLANKS, Blocks.CRIMSON_PLANKS);
+    public static List<Block> logList = List.of(Blocks.CRIMSON_STEM, Blocks.WARPED_STEM, Blocks.DARK_OAK_LOG, Blocks.ACACIA_LOG,
+            Blocks.JUNGLE_LOG, Blocks.OAK_LOG, Blocks.BIRCH_LOG, Blocks.SPRUCE_LOG, Blocks.CRIMSON_STEM);
+    public static List<Block> slabList = List.of(Blocks.CRIMSON_SLAB, Blocks.WARPED_SLAB, Blocks.DARK_OAK_SLAB, Blocks.ACACIA_SLAB,
+            Blocks.JUNGLE_SLAB, Blocks.OAK_SLAB, Blocks.BIRCH_SLAB, Blocks.SPRUCE_SLAB, Blocks.CRIMSON_SLAB);
+    public static List<Block> trapdoorList = List.of(Blocks.CRIMSON_TRAPDOOR, Blocks.WARPED_TRAPDOOR, Blocks.DARK_OAK_TRAPDOOR, Blocks.ACACIA_TRAPDOOR,
+            Blocks.JUNGLE_TRAPDOOR, Blocks.OAK_TRAPDOOR, Blocks.BIRCH_TRAPDOOR, Blocks.SPRUCE_TRAPDOOR, Blocks.CRIMSON_TRAPDOOR);
+    public static List<Block> stairList = List.of(Blocks.CRIMSON_STAIRS, Blocks.WARPED_STAIRS, Blocks.DARK_OAK_STAIRS, Blocks.ACACIA_STAIRS,
+            Blocks.JUNGLE_STAIRS, Blocks.OAK_STAIRS, Blocks.BIRCH_STAIRS, Blocks.SPRUCE_STAIRS, Blocks.CRIMSON_STAIRS);
 
 
     void setBlock(List<Block> list, PlayerEntity playerEntity, BlockState blockState, World world, BlockPos pos, TagKey<Block> tag) {
-        if (blockState.isIn(tag)) { // Makes sure the block is a plank: new, modernized version
+        if (blockState.isIn(tag) && list.contains(blockState.getBlock())) { // Makes sure the block is a plank: new, modernized version
             if (!lockedState.containsKey(playerEntity.getUuid())) {
                 // default off
                 lockedState.put(playerEntity.getUuid(), false);
@@ -196,13 +202,13 @@ public class WoodWand extends Item {
                     BlockHitResult blockHit = (BlockHitResult) hit;
                     BlockPos blockPos = blockHit.getBlockPos();
                     BlockState blockState = world.getBlockState(blockPos);
-                    Block block = blockState.getBlock();
-
-                    System.out.println(block);
 
                     // Update: use block tags instead of list. Helps with mod compatibility
                     setBlock(plankList, playerEntity,blockState,world,blockPos, BlockTags.PLANKS);
-                    setBlock(logList, playerEntity,blockState,world,blockPos, BlockTags.LOGS); //Sync the plank and log type together
+                    setBlock(logList, playerEntity,blockState,world,blockPos, BlockTags.LOGS);
+                    setBlock(slabList, playerEntity,blockState,world,blockPos, BlockTags.SLABS);
+                    setBlock(stairList, playerEntity,blockState,world,blockPos, BlockTags.STAIRS);
+//                    setBlock(trapdoorList, playerEntity,blockState,world,blockPos, BlockTags.TRAPDOORS);
                     break;
             }
         }
